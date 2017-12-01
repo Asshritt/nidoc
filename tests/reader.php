@@ -19,14 +19,18 @@
 				<div class="col-md-12">
 					<?php
 
+
 $xml = simplexml_load_file(__DIR__ . '/publier_chaque_variation.xml');
 $xml->registerXPathNamespace("UML", "omg.org/UML1.3");
+
 
 echo "<h2>Activités</h2>";
 echo "<ul>";
 $actionStateList = $xml->xpath("//UML:ActionState");
 foreach ($actionStateList as $actionState) {
+
 	/* @var $actionState SimpleXMLElement */
+	//Hydrator::hydrate("Activite", (string)$actionState->attributes()["xmi.id"], (string)$actionState->attributes()["name"]);
 	echo "<li>".(string)$actionState->attributes()["name"]."</li>";
 }
 echo "</ul>";

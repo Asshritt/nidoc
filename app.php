@@ -3,10 +3,10 @@
 use \Tiny\Routing\Router;
 use \Tiny\Routing\Route;
 use \Tiny\Routing\RouteParameter;
+use \Doc\TutorielController;
 use \Doc\TestController;
 
 require(__DIR__.'/infos/load.php');
-define('BASE_DIR', substr($_SERVER['SCRIPT_FILENAME'], 0, strrpos($_SERVER['SCRIPT_FILENAME'], '/') + 1));
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = str_replace("?" . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
@@ -91,34 +91,62 @@ $config = array(
 );
 
 //instancier OBJET PDO ICI
+//meh
 
-$controllerClassName = TestController::class;
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "nidoc";
+
+        // Create connection
+$pdo = new \mysqli($servername, $username, $password, $dbname);
+
+        // Check connection
+if ($pdo->connect_error) {
+	die("Connection failed: " . $pdo->connect_error);
+}
+//end
+
+$nomRepertoireAdmin = "adminni";
+define('_ADMIN_DIR_', $nomRepertoireAdmin);
+
+$controllerDir = __DIR__."/infos/Doc";
 
 $router = new Router();
-$rc = new ReflectionClass($controllerClassName);
-$rmList = $rc->getMethods(ReflectionMethod::IS_PUBLIC);
-/* @var $rm ReflectionMethod */
-foreach ($rmList as $rm) {
-	$route = new Route();
-	$route->setCallback(array(new $controllerClassName($config /* RAJOUTER L'OBJET PDO ICI */), $rm->name));
+$scandir = scandir($controllerDir);
+foreach ($scandir as $e) {
+	$filename = $controllerDir."/".$e;
+	if (is_file($filename)) {
+		$controllerClassName = "\\Doc\\" . pathinfo($filename, PATHINFO_FILENAME);
+		$rc = new ReflectionClass($controllerClassName);
+		$rmList = $rc->getMethods(ReflectionMethod::IS_PUBLIC);
+		/* @var $rm ReflectionMethod */
+		foreach ($rmList as $rm) {
+			$route = new Route();
+		$route->setCallback(array(new $controllerClassName($config /* RAJOUTER L'OBJET PDO ICI */), $rm->name));
 
-	$docComment = $rm->getDocComment();
+		$docComment = $rm->getDocComment();
 
-	$lines = array_map(function($e) {
-		return trim($e, " \t\n\r\0\x0B*");
-	}, explode("\n", $docComment));
+		$lines = array_map(function($e) {
+			return trim($e, " \t\n\r\0\x0B*");
+		}, explode("\n", $docComment));
 
-	array_shift($lines);
-	array_pop($lines);
+		array_shift($lines);
+		array_pop($lines);
 
-	foreach ($lines as $line) {
-		if (preg_match("/@pattern\s(.+)/", $line, $matches)) {
-			$route->setPattern($matches[1]);
-		} elseif (preg_match("/@parameter\s(.+)\s(.+)/", $line, $matches)) {
-			$route->addParamter(new RouteParameter($matches[1], $matches[2]));
+		foreach ($lines as $line) {
+			if (preg_match("/@pattern\s(.+)/", $line, $matches)) {
+
+				$matches[1] = str_replace("{_ADMIN_DIR_}", _ADMIN_DIR_, $matches[1]);
+
+				$route->setPattern($matches[1]);
+			} elseif (preg_match("/@parameter\s(.+)\s(.+)/", $line, $matches)) {
+				$route->addParamter(new RouteParameter($matches[1], $matches[2]));
+			}
 		}
+		$router->addRoute($route);
 	}
-	$router->addRoute($route);
+}
 }
 
 //var_dump($router);

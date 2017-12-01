@@ -1,9 +1,11 @@
 <?php
 
+namespace XMI;
+
 class Lien extends Base{
 
-	private $_source;
-	private $_cible;
+	private $source;
+	private $cible;
 
 	public function __construct(string $id, string $libelle, Base $source, Base $cible)
 	{
@@ -13,15 +15,23 @@ class Lien extends Base{
 	}
 
 	public function setSource($source) {
-		$this->_source = $source;
+		$this->source = $source;
+	}
+
+	public function getSource() {
+		return $this->source;
 	}
 
 	public function setCible($cible) {
-		$this->_cible = $cible;
+		$this->cible = $cible;
+	}
+
+	public function getCible() {
+		return $this->cible;
 	}
 
 	public function affiche() {
-		echo($this->_source->getLibelle() . ' -----' . $this->_libelle . '-----> ' . $this->_cible->getLibelle());
+		echo($this->source->getLibelle() . ' -----' . $this->getLibelle() . '-----> ' . $this->getCible()->getLibelle());
 	}
 
 }

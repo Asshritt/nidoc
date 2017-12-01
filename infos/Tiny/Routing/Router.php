@@ -16,9 +16,10 @@ class Router {
 
 	public function getMatchingRoute($uri) {
 		$matches = array();
+
 		foreach ($this->routes as $route) {
 			$pattern = $route->compile();
-
+			
 			if (preg_match('`^' . $pattern . '$`', $uri, $matches)) {
 				array_shift($matches);
 

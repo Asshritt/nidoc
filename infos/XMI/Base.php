@@ -14,23 +14,23 @@ class Base{
 	}
 
 	public function setId($id) {
-		$this->_id = $id;
+		$this->id = $id;
 	}
 
 	public function getId() {
-		return $this->_id;
+		return $this->id;
 	}
 
 	public function setLibelle($libelle) {
-		$this->_libelle = $libelle;
+		$this->libelle = $libelle;
 	}
 
 	public function getLibelle() {
-		return $this->_libelle;
+		return $this->libelle;
 	}
 
 	public function affiche() {
-		echo($this->_libelle);
+		echo($this->libelle);
 	}
 
 }

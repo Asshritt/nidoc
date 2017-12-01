@@ -1,0 +1,14 @@
+Administrateur
+/admin/projet/list -> Liste des projets -> projet_list.tpl
+/admin/projet/add -> Ajouter un projet -> projet_add.tpl
+/admin/projet/edit/{idProjet} -> Editer un projet -> projet_edit.tpl
+/admin/projet/show/{idProjet} ou /projet/{idProjet} -> Afficher un projet (avec les modules et membres associés) -> projet_show.tpl
+/admin/projet/delete/{idProjet} -> Supprimer un projet
+
+/admin/ajax/associer/projet/membre avec les post data
+ou
+/admin/ajax/associer/projet/{idProjet}/membre/{idMembre}
+
+Membre
+/tutoriel/{idTutoriel} -> tutoriel_show.tpl
+

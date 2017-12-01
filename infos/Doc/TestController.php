@@ -5,6 +5,10 @@ namespace Doc;
 use XMI\Debut;
 use XMI\Fin;
 use XMI\Base;
+use XMI\Activite;
+use XMI\Decision;
+use XMI\Lien;
+use XMI\Hydrator;
 
 class TestController extends \Tiny\BaseController {
 
@@ -36,7 +40,7 @@ class TestController extends \Tiny\BaseController {
         $smarty->display(__DIR__.'/../../template/hello.tpl');
 
 
-        // return "Hello $name !";
+        //return "Hello $name !";
     }
 
     /**
@@ -55,6 +59,7 @@ class TestController extends \Tiny\BaseController {
      */
     public function xmiAction() {
         ob_start();
+
         echo '<div style="border-style: solid">';
 
         $debut = new Debut('EAID_DA1D9CF3_32BD_4354_BEDC_0F8F266CC8AE', 'Début');
@@ -105,7 +110,109 @@ class TestController extends \Tiny\BaseController {
         foreach ($liens as $lien) {
             echo($lien->affiche() . '<br>');
         }
+
+        echo '</div><br>';
+        
         return ob_get_clean();
+    }
+
+    /**
+     * @pattern /login
+     * @return string
+     */
+
+    public function loginAction() {
+        $this->smarty->assign('page', 'Connexion');
+        return $this->smarty->fetch('login.tpl');
+    }
+
+    /**
+     * @pattern /accueil
+     * @return string
+     */
+
+    public function accueilAction() {
+
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $dbname = "nidoc";
+
+        // Create connection
+        $pdo = new \mysqli($servername, $username, $password, $dbname);
+
+        // Check connection
+        if ($pdo->connect_error) {
+            die("Connection failed: " . $pdo->connect_error);
+        }
+
+        $sql = "SELECT * FROM Projet";
+        $result = $pdo->query($sql);
+
+        $res = array();
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $res[] = $row;
+            }
+        } else {
+            echo "0 results";
+        }
+        $pdo->close();
+
+        $this->smarty->assign('projets', $res);
+        $this->smarty->assign('page', 'Accueil');
+        return $this->smarty->fetch('accueil.tpl');
+    }
+
+    /**
+     * @pattern /informations
+     * @return string
+     */
+
+    public function informationsAction() {
+        echo "TODO";
+    }
+
+    /**
+     * @pattern /fonctionnalite/{id}
+     * @parameter id int
+     * @return string
+     */
+
+    public function fonctionnaliteAction($id) {
+
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $dbname = "nidoc";
+
+        // Create connection
+        $conn = new \mysqli($servername, $username, $password, $dbname);
+
+        // Check connection
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+        $sql = "SELECT * FROM Tutoriel WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = $id)";
+        $result = $conn->query($sql);
+
+        $res = array();
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $res[] = $row;
+            }
+        } else {
+            echo "0 results";
+        }
+        $conn->close();
+
+        $this->smarty->assign('projets', $res);
+        var_dump($res);
+        $this->smarty->assign('page', 'Tutoriel');
+        return $this->smarty->fetch('tutoriel.tpl');
     }
 
 }

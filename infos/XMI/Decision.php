@@ -1,5 +1,7 @@
 <?php
 
+namespace XMI;
+
 class Decision extends Base{
 
 	public function __construct(string $id, string $libelle)
