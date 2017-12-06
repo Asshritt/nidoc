@@ -17,6 +17,49 @@ class TutorielController extends \Tiny\BaseController {
     }
 
     /**
+     * @pattern /login
+     * @return string
+     */
+
+    public function loginAction() {
+        $this->smarty->assign('page', 'Connexion');
+        return $this->smarty->fetch('login.tpl');
+    }
+
+    /**
+     * @pattern /accueil
+     * @return string
+     */
+
+    public function accueilAction() {
+
+        $this->smarty->assign('page', 'Accueil');
+        return $this->smarty->fetch('accueil.tpl');
+    }
+
+    /**
+     * @pattern /informations
+     * @return string
+     */
+
+    public function informationsAction() {
+        $this->smarty->assign('page', 'Mes informations');
+        return $this->smarty->fetch('informations.tpl');
+    }
+
+    /**
+     * @pattern /fonctionnalite/{id}
+     * @parameter id int
+     * @return string
+     */
+
+    public function fonctionnaliteAction($id) {
+
+        $this->smarty->assign('page', 'Tutoriel');
+        return $this->smarty->fetch('tutoriel.tpl');
+    }
+
+    /**
      * @pattern /{_ADMIN_DIR_}/tutoriel/import
      * @return string
      */
@@ -90,12 +133,13 @@ class TutorielController extends \Tiny\BaseController {
         $password = "";
         $dbname = "nidoc";
 
+        try {
         // Create connection
-        $pdo = new \mysqli($servername, $username, $password, $dbname);
+            $pdo = new \PDO('mysql:host=localhost;dbname=nidoc', $username, $password);
 
         // Check connection
-        if ($pdo->connect_error) {
-            die("Connection failed: " . $pdo->connect_error);
+        }catch (PDOException $e) {
+            die("Connection failed: " . $e->getMessage());
         }
 
         $sql = "";
@@ -103,6 +147,8 @@ class TutorielController extends \Tiny\BaseController {
         if (isset($_POST['projet'])) {
             $sql = "SELECT * FROM Module WHERE NumModule IN (SELECT NumModule FROM AssoModuleProjet WHERE NumProjet = " . $_POST['projet'] . ")";
         } else if (isset($_POST['module'])) {
+            $sql = "SELECT * FROM Fonctionnalite WHERE NumFonctionnalite IN (SELECT NumFonctionnalite FROM AssoModuleFonctionnalite WHERE NumModule = " . $_POST['module'] . ")";
+        } else if (isset($_POST['tutoriel'])) {
             $sql = "SELECT * FROM Fonctionnalite WHERE NumFonctionnalite IN (SELECT NumFonctionnalite FROM AssoModuleFonctionnalite WHERE NumModule = " . $_POST['module'] . ")";
         }
 
@@ -114,10 +160,7 @@ class TutorielController extends \Tiny\BaseController {
             while($row = $result->fetch_assoc()) {
                 $res[] = $row;
             }
-        } else {
-            echo "0 results";
         }
-        $pdo->close();
 
         return json_encode($res);
     }

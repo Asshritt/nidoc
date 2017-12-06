@@ -20,6 +20,9 @@
 
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <link href="../assets/css/main.css" rel="stylesheet">
+    <link href="../assets/css/sidebar.css" rel="stylesheet">
 </head>
 
 
@@ -29,8 +32,10 @@
 		<div class="navbar-header">
 			<a class="navbar-brand">{$page}</a>
 		</div>
+		{if $page != 'Connexion' and $page != 'Mes informations'}
 		<ul class="nav navbar-nav navbar-right">
-			<li><a href="informations">Mes informations</a></li>
+			<li><a href="{WEB_ROOT}informations">Mes informations</a></li>
 		</ul>
+		{/if}
 	</div><!-- /.container-fluid -->
 </nav>

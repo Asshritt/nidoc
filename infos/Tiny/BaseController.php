@@ -13,6 +13,7 @@ class BaseController{
 	{
 		$this->config = $config;
 		$this->smarty = new \Smarty();
+		$this->smarty->assign('WEB_ROOT', WEB_ROOT);
 
 		$this->configureSmarty();
 

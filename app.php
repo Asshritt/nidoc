@@ -14,7 +14,6 @@ $requestUri = str_replace("?" . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_
 //var_dump($requestMethod, $requestUri, $_GET, $_POST);
 
 
-
 /**
  * https://stackoverflow.com/questions/254514/php-and-enumerations
  */
@@ -91,24 +90,25 @@ $config = array(
 );
 
 //instancier OBJET PDO ICI
-//meh
 
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "nidoc";
 
+try {
         // Create connection
-$pdo = new \mysqli($servername, $username, $password, $dbname);
+	$pdo = new \PDO('mysql:host=localhost;dbname=nidoc', $username, $password);
 
         // Check connection
-if ($pdo->connect_error) {
-	die("Connection failed: " . $pdo->connect_error);
+}catch (PDOException $e) {
+	die("Connection failed: " . $e->getMessage());
 }
 //end
 
 $nomRepertoireAdmin = "adminni";
 define('_ADMIN_DIR_', $nomRepertoireAdmin);
+define("WEB_ROOT", str_replace("app.php", "", $_SERVER["SCRIPT_NAME"]));
 
 $controllerDir = __DIR__."/infos/Doc";
 

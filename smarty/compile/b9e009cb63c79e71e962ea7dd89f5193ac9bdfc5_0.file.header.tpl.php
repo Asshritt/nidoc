@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.30, created on 2017-12-01 15:17:11
+/* Smarty version 3.1.30, created on 2017-12-05 10:12:12
   from "C:\Users\Asshritt\Documents\__Projets\IUP MIAGE\ProjetAnnee\nidoc\template\header.tpl" */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.30',
-  'unifunc' => 'content_5a21727748f689_99662354',
+  'unifunc' => 'content_5a2670fcad8b77_93987930',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     'b9e009cb63c79e71e962ea7dd89f5193ac9bdfc5' => 
     array (
       0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP MIAGE\\ProjetAnnee\\nidoc\\template\\header.tpl',
-      1 => 1512141372,
+      1 => 1512468731,
       2 => 'file',
     ),
   ),
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_5a21727748f689_99662354 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5a2670fcad8b77_93987930 (Smarty_Internal_Template $_smarty_tpl) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,6 +49,9 @@ function content_5a21727748f689_99662354 (Smarty_Internal_Template $_smarty_tpl)
 	<?php echo '<script'; ?>
  src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"><?php echo '</script'; ?>
 >
+
+    <link href="../assets/css/main.css" rel="stylesheet">
+    <link href="../assets/css/sidebar.css" rel="stylesheet">
 </head>
 
 
@@ -59,9 +62,12 @@ function content_5a21727748f689_99662354 (Smarty_Internal_Template $_smarty_tpl)
 			<a class="navbar-brand"><?php echo $_smarty_tpl->tpl_vars['page']->value;?>
 </a>
 		</div>
+		<?php if ($_smarty_tpl->tpl_vars['page']->value != 'Connexion' && $_smarty_tpl->tpl_vars['page']->value != 'Mes informations') {?>
 		<ul class="nav navbar-nav navbar-right">
-			<li><a href="informations">Mes informations</a></li>
+			<li><a href="<?php echo WEB_ROOT;?>
+informations">Mes informations</a></li>
 		</ul>
+		<?php }?>
 	</div><!-- /.container-fluid -->
 </nav>
 <?php }
