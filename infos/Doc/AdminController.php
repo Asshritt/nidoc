@@ -4,8 +4,8 @@ namespace Doc;
 
 class AdminController extends \Tiny\BaseController {
 
-    public function __construct($config) {
-        parent::__construct($config);
+    public function __construct($config, $pdo) {
+        parent::__construct($config, $pdo);
     }
 
     /**
@@ -34,6 +34,15 @@ class AdminController extends \Tiny\BaseController {
      */
 
     public function adminProjetsAction() {
+
+        // Récupération des projets de la base de données
+        $projets = array();
+        $request = $this->pdo->query('SELECT * FROM Projet');
+        while ($donnees = $request->fetch(\PDO::FETCH_ASSOC)) {
+            $projets[] = $donnees; 
+        }
+
+        $this->smarty->assign('projets', $projets);
         $this->smarty->assign('page', 'Gestion des Projets');
         return $this->smarty->fetch('projets.tpl');
     }
@@ -45,7 +54,7 @@ class AdminController extends \Tiny\BaseController {
 
     public function adminModulesAction() {
         $this->smarty->assign('page', 'Gestion des Modules');
-        return $this->smarty->fetch('todo.tpl');
+        return $this->smarty->fetch('modules.tpl');
     }
 
     /**

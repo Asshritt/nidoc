@@ -11,22 +11,22 @@
 					Menu
 				</li>
 				<li>
-					<a href="membres">Membres</a>
+					<a href="{$url}{$adminDir}/membres">Membres</a>
 				</li>
 				<li>
-					<a href="projets">Projets</a>
+					<a href="{$url}{$adminDir}/projets">Projets</a>
 				</li>
 				<li>
-					<a href="modules">Modules</a>
+					<a href="{$url}{$adminDir}/modules">Modules</a>
 				</li>
 				<li>
-					<a href="fonctions">Fonctions</a>
+					<a href="{$url}{$adminDir}/fonctionnalites">Fonctionnalites</a>
 				</li>
 				<li>
-					<a href="tutoriels">Tutoriels</a>
+					<a href="{$url}{$adminDir}/tutoriels">Tutoriels</a>
 				</li>
 				<li>
-					<a href="medias">Medias</a>
+					<a href="{$url}{$adminDir}/medias">Medias</a>
 				</li>
 			</ul>
 		</div>

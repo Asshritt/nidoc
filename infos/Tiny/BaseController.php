@@ -9,11 +9,13 @@ class BaseController{
 	protected $config;
 
 
-	public function __construct($config)
+	public function __construct($config, $pdo)
 	{
 		$this->config = $config;
+		$this->pdo = $pdo;
 		$this->smarty = new \Smarty();
-		$this->smarty->assign('WEB_ROOT', WEB_ROOT);
+		$this->smarty->assign('url', WEB_ROOT);
+		$this->smarty->assign('adminDir', _ADMIN_DIR_);
 
 		$this->configureSmarty();
 

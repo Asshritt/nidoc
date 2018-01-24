@@ -1,18 +1,20 @@
 <?php
 
+// Use namespaces
 use \Tiny\Routing\Router;
 use \Tiny\Routing\Route;
 use \Tiny\Routing\RouteParameter;
 use \Doc\TutorielController;
 use \Doc\TestController;
 
+// Autoloader
 require(__DIR__.'/infos/load.php');
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = str_replace("?" . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
 
-//var_dump($requestMethod, $requestUri, $_GET, $_POST);
-
+//Démarage de la seesion
+session_start();
 
 /**
  * https://stackoverflow.com/questions/254514/php-and-enumerations
@@ -89,26 +91,26 @@ $config = array(
 	)
 );
 
-//instancier OBJET PDO ICI
+//instancier OBJET PDO ICI -----------------------------------------------------------------------------------------------------
 
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "nidoc";
 
-try {
-        // Create connection
+try { // Create connection
 	$pdo = new \PDO('mysql:host=localhost;dbname=nidoc', $username, $password);
-
-        // Check connection
-}catch (PDOException $e) {
+} catch (PDOException $e) { // Check connection
 	die("Connection failed: " . $e->getMessage());
 }
-//end
+//end -------------------------------------------------------------------------------------------------------------------------
 
+// Variables
 $nomRepertoireAdmin = "adminni";
 define('_ADMIN_DIR_', $nomRepertoireAdmin);
-define("WEB_ROOT", str_replace("app.php", "", $_SERVER["SCRIPT_NAME"]));
+define('WEB_ROOT', $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER["SERVER_NAME"] . str_replace("app.php", "", $_SERVER["SCRIPT_NAME"]));
+
+//var_dump($_SERVER);
 
 $controllerDir = __DIR__."/infos/Doc";
 
@@ -123,7 +125,7 @@ foreach ($scandir as $e) {
 		/* @var $rm ReflectionMethod */
 		foreach ($rmList as $rm) {
 			$route = new Route();
-		$route->setCallback(array(new $controllerClassName($config /* RAJOUTER L'OBJET PDO ICI */), $rm->name));
+		$route->setCallback(array(new $controllerClassName($config, $pdo), $rm->name));
 
 		$docComment = $rm->getDocComment();
 

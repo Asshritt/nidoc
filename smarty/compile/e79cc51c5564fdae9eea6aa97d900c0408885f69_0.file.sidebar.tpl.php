@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.30, created on 2017-12-02 12:38:43
+/* Smarty version 3.1.30, created on 2017-12-06 16:08:09
   from "C:\Users\Asshritt\Documents\__Projets\IUP MIAGE\ProjetAnnee\nidoc\template\sidebar.tpl" */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.30',
-  'unifunc' => 'content_5a229ed3301db9_58835461',
+  'unifunc' => 'content_5a2815e9444623_81270848',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     'e79cc51c5564fdae9eea6aa97d900c0408885f69' => 
     array (
       0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP MIAGE\\ProjetAnnee\\nidoc\\template\\sidebar.tpl',
-      1 => 1512218180,
+      1 => 1512576488,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:header.tpl' => 1,
   ),
 ),false)) {
-function content_5a229ed3301db9_58835461 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5a2815e9444623_81270848 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_subTemplateRender("file:header.tpl", $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
 
@@ -46,7 +46,7 @@ $_smarty_tpl->_subTemplateRender("file:header.tpl", $_smarty_tpl->cache_id, $_sm
 					<a href="modules">Modules</a>
 				</li>
 				<li>
-					<a href="fonctions">Fonctions</a>
+					<a href="fonctionnalites">Fonctionnalites</a>
 				</li>
 				<li>
 					<a href="tutoriels">Tutoriels</a>

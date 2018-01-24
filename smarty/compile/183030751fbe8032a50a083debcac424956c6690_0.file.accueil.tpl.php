@@ -1,17 +1,54 @@
-{include file="header.tpl"}
+<?php
+/* Smarty version 3.1.30, created on 2018-01-24 16:29:22
+  from "C:\Users\Asshritt\Documents\__Projets\IUP_MIAGE\ProjetAnnee\nidoc\template\accueil.tpl" */
+
+/* @var Smarty_Internal_Template $_smarty_tpl */
+if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
+  'version' => '3.1.30',
+  'unifunc' => 'content_5a68b4629dd508_51637198',
+  'has_nocache_code' => false,
+  'file_dependency' => 
+  array (
+    '183030751fbe8032a50a083debcac424956c6690' => 
+    array (
+      0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP_MIAGE\\ProjetAnnee\\nidoc\\template\\accueil.tpl',
+      1 => 1516811300,
+      2 => 'file',
+    ),
+  ),
+  'includes' => 
+  array (
+    'file:header.tpl' => 1,
+  ),
+),false)) {
+function content_5a68b4629dd508_51637198 (Smarty_Internal_Template $_smarty_tpl) {
+$_smarty_tpl->_subTemplateRender("file:header.tpl", $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
+?>
+
 <body>
 	<div class="container">
 		<div class="row">
 			<div class="col-md-4">
 				<div class="list-group" id="projets">
 					<label>Projets disponibles :</label>
-					{if $projets|@count gt 0}
-					{foreach from=$projets item=projet}
-					<button id="{$projet['NumProjet']}" type="button" class="list-group-item">{$projet['Nom']}</button>
-					{/foreach}
-					{else}
+					<?php if (count($_smarty_tpl->tpl_vars['projets']->value) > 0) {?>
+					<?php
+$_from = $_smarty_tpl->smarty->ext->_foreach->init($_smarty_tpl, $_smarty_tpl->tpl_vars['projets']->value, 'projet');
+if ($_from !== null) {
+foreach ($_from as $_smarty_tpl->tpl_vars['projet']->value) {
+?>
+					<button id="<?php echo $_smarty_tpl->tpl_vars['projet']->value['NumProjet'];?>
+" type="button" class="list-group-item"><?php echo $_smarty_tpl->tpl_vars['projet']->value['Nom'];?>
+</button>
+					<?php
+}
+}
+$_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl);
+?>
+
+					<?php } else { ?>
 					<button id="" type="button" class="list-group-item"><i>Pas de projets</i></button>
-					{/if}
+					<?php }?>
 				</div>
 			</div>
 			<div class="col-md-4">
@@ -26,8 +63,9 @@
 	</div>
 </body>
 
-{literal}
-<script type="text/javascript">
+
+<?php echo '<script'; ?>
+ type="text/javascript">
 	// Appel Ajax pour recuperer les modules apres selection d'un projet
 	$('#projets>button').click(function() {
 		$.ajax({
@@ -78,5 +116,7 @@
 			alert(this.id);
 		});
 		*/
-	</script>
-	{/literal}
+	<?php echo '</script'; ?>
+>
+	<?php }
+}

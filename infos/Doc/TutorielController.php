@@ -12,8 +12,8 @@ use XMI\Hydrator;
 
 class TutorielController extends \Tiny\BaseController {
 
-    public function __construct($config) {
-        parent::__construct($config);
+    public function __construct($config, $pdo) {
+        parent::__construct($config, $pdo);
     }
 
     /**
@@ -33,7 +33,15 @@ class TutorielController extends \Tiny\BaseController {
 
     public function accueilAction() {
 
+        // Récupération des projets de la base de données
+        $projets = array();
+        $request = $this->pdo->query('SELECT * FROM Projet');
+        while ($donnees = $request->fetch(\PDO::FETCH_ASSOC)) {
+            $projets[] = $donnees; 
+        }
+
         $this->smarty->assign('page', 'Accueil');
+        $this->smarty->assign('projets', $projets);
         return $this->smarty->fetch('accueil.tpl');
     }
 
@@ -43,6 +51,16 @@ class TutorielController extends \Tiny\BaseController {
      */
 
     public function informationsAction() {
+        var_dump($_SESSION);
+        /*
+        $results = $this->pdo->query('SELECT * FROM Membre WHERE NumMembre = ' . $_SESSION)->fetchAll();
+
+        $res = array();
+        foreach ($results as $result) {
+            $res[] = $result;
+        }
+        $this->smarty->assign('infos', $infos);*/
+
         $this->smarty->assign('page', 'Mes informations');
         return $this->smarty->fetch('informations.tpl');
     }
@@ -55,7 +73,16 @@ class TutorielController extends \Tiny\BaseController {
 
     public function fonctionnaliteAction($id) {
 
+        // Récupération des projets de la base de données
+        $results = $this->pdo->query('SELECT * FROM Etape WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+
+        $res = array();
+        foreach ($results as $result) {
+            $res[] = $result;
+        }
+
         $this->smarty->assign('page', 'Tutoriel');
+        $this->smarty->assign('etapes', $res);
         return $this->smarty->fetch('tutoriel.tpl');
     }
 
@@ -95,6 +122,8 @@ class TutorielController extends \Tiny\BaseController {
             $allTab[] = end($pseudoTab);
         }
 
+        // Si le lien part d'une décision et n'a pas de libelle, abort 
+
         foreach ($transitionList as $transition) {
             $sourceId = (string)$transition->attributes()["source"];
             $cibleId = (string)$transition->attributes()["target"];
@@ -119,6 +148,25 @@ class TutorielController extends \Tiny\BaseController {
         var_dump($pseudoTab);
         echo "--------------------------------------------------------------------------------------------------------------------------------------";
         var_dump($transitionTab);
+
+
+        $sql = "SELECT MAX(NumTutoriel) FROM Tutoriel";
+        $numTutoriel = $this->pdo->query($sql)->fetch();
+        $numTutoriel = $numTutoriel[0] + 1;
+        
+        /*
+        $sql = $this->pdo->prepare("INSERT INTO TUTORIEL (NumTutoriel) VALUES (:numTutoriel)");
+        $sql->bindParam(':numTutoriel', $numTutoriel);
+        $sql->execute();
+        
+        foreach ($actionTab as $action) {
+            $description = $action->getLibelle();
+            $sql = $this->pdo->prepare("INSERT INTO ETAPE (Description, NumTutoriel) VALUES (:description, :numTutoriel)");
+            $sql->bindParam(':description', $description);
+            $sql->bindParam(':numTutoriel', $numTutoriel);
+            $sql->execute();
+        }*/
+
     }
 
     /**
@@ -128,20 +176,6 @@ class TutorielController extends \Tiny\BaseController {
 
     public function dataAction() {
 
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "nidoc";
-
-        try {
-        // Create connection
-            $pdo = new \PDO('mysql:host=localhost;dbname=nidoc', $username, $password);
-
-        // Check connection
-        }catch (PDOException $e) {
-            die("Connection failed: " . $e->getMessage());
-        }
-
         $sql = "";
 
         if (isset($_POST['projet'])) {
@@ -149,18 +183,22 @@ class TutorielController extends \Tiny\BaseController {
         } else if (isset($_POST['module'])) {
             $sql = "SELECT * FROM Fonctionnalite WHERE NumFonctionnalite IN (SELECT NumFonctionnalite FROM AssoModuleFonctionnalite WHERE NumModule = " . $_POST['module'] . ")";
         } else if (isset($_POST['tutoriel'])) {
-            $sql = "SELECT * FROM Fonctionnalite WHERE NumFonctionnalite IN (SELECT NumFonctionnalite FROM AssoModuleFonctionnalite WHERE NumModule = " . $_POST['module'] . ")";
+            $sql = "SELECT * FROM Fonctionnalite WHERE NumTutoriel = " . $_POST['tutoriel'];
         }
 
-        $result = $pdo->query($sql);
+        $results = $this->pdo->query($sql)->fetchAll();
 
         $res = array();
 
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $res[] = $row;
-            }
+        foreach ($results as $result) {
+            $res[] = $result;
         }
+
+        /*
+        echo('<pre>'); 
+        print_r($res); 
+        echo('</pre>');
+        */
 
         return json_encode($res);
     }

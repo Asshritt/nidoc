@@ -2,23 +2,22 @@
 <body>
 	<div class="container">
 		<div class="row">
-			<div class="col-md-4">
-				<div class="list-group" id="projets">
-					<button type="button" class="list-group-item"><i>Market Invaders</i></button>
-					<button type="button" class="list-group-item"><i>NiShop</i></button>
-				</div>
-			</div>
-			<div class="col-md-1">
-				<div class="list-group" id="edit">
-					<button type="button" class="list-group-item glyphicon glyphicon-pencil"></button>
-					<button type="button" class="list-group-item glyphicon glyphicon-pencil"></button>
-				</div>
-			</div>
-			<div class="col-md-1">
-				<div class="list-group" id="delete">
-					<button type="button" class="list-group-item glyphicon glyphicon-remove"></button>
-					<button type="button" class="list-group-item glyphicon glyphicon-remove"></button>
-				</div>
+			<div class="col-lg-6">
+				<ul class="list-group" id="projets">
+					{if $projets|@count gt 0}
+					{foreach from=$projets item=projet}
+					<li class="list-group-item">
+						<label>{$projet['Nom']}</label>
+						<div class="material-switch pull-right">
+							<button class="glyphicon glyphicon-pencil"></button>
+							<button class="glyphicon glyphicon-remove"></button>
+						</div>
+					</li>
+					{/foreach}
+					{else} 
+					<script type="text/javascript">alert('Pas de projets a afficher');</script>
+					{/if}
+				</ul>
 			</div>
 		</div>
 	</div>
