@@ -255,7 +255,7 @@ Note :
 										<UML:TaggedValue tag="virtualInheritance" value="0"/>
 									</UML:ModelElement.taggedValue>
 								</UML:Transition>
-								<UML:Transition xmi.id="EAID_E836CAD4_84A1_4464_AB4D_E7A706EAADD2" visibility="public" source="EAID_7E826934_5A39_4eb2_9749_3ACF07177F0A" target="EAID_68A94229_0ADD_4f2a_8AC9_13AE0106E39E">
+								<UML:Transition name="Oui" xmi.id="EAID_E836CAD4_84A1_4464_AB4D_E7A706EAADD2" visibility="public" source="EAID_7E826934_5A39_4eb2_9749_3ACF07177F0A" target="EAID_68A94229_0ADD_4f2a_8AC9_13AE0106E39E">
 									<UML:ModelElement.taggedValue>
 										<UML:TaggedValue tag="style" value="3"/>
 										<UML:TaggedValue tag="ea_type" value="ControlFlow"/>
@@ -292,7 +292,7 @@ Note :
 										<UML:TaggedValue tag="virtualInheritance" value="0"/>
 									</UML:ModelElement.taggedValue>
 								</UML:Transition>
-								<UML:Transition xmi.id="EAID_352EB7EF_9410_4fcc_B22D_DF4EDE770F51" visibility="public" source="EAID_7E826934_5A39_4eb2_9749_3ACF07177F0A" target="EAID_A8B721EB_E730_4b42_8CA1_AE1345D0E348">
+								<UML:Transition name="Non" xmi.id="EAID_352EB7EF_9410_4fcc_B22D_DF4EDE770F51" visibility="public" source="EAID_7E826934_5A39_4eb2_9749_3ACF07177F0A" target="EAID_A8B721EB_E730_4b42_8CA1_AE1345D0E348">
 									<UML:ModelElement.taggedValue>
 										<UML:TaggedValue tag="style" value="3"/>
 										<UML:TaggedValue tag="ea_type" value="ControlFlow"/>

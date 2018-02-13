@@ -96,13 +96,14 @@ $config = array(
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "nidoc";
+$dbname = "nidoc_test";
 
 try { // Create connection
-	$pdo = new \PDO('mysql:host=localhost;dbname=nidoc', $username, $password);
+	$pdo = new \PDO('mysql:host=localhost;dbname=nidoc_test', $username, $password);
 } catch (PDOException $e) { // Check connection
 	die("Connection failed: " . $e->getMessage());
 }
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 //end -------------------------------------------------------------------------------------------------------------------------
 
 // Variables
