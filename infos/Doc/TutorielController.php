@@ -91,90 +91,82 @@ class TutorielController extends \Tiny\BaseController {
      * @return string
      */
     public function uploadXMLAction() {
-        var_dump($_FILES);
-        var_dump($_POST);
-        var_dump($_REQUEST);
-
+        try {
         // Recuperation nom du fichier
-        $basename = basename($_FILES['uploadXML']['name']);
+            $basename = basename($_FILES['uploadXML']['name']);
         // Dossier d'upload
-        $uploaddir = $this->config['root'] . '/temp/';
+            $uploaddir = $this->config['root'] . '/temp/';
         // Nom complet avec dossier
-        $uploadfile = $uploaddir . $basename;
+            $uploadfile = $uploaddir . $basename;
         // Variable pour check si le fichier est coorect et a bien ete upload 
-        $fileUploaded = false;
+            $fileUploaded = false;
         // Recuperation extention fichier upload
-        $ext = pathinfo($basename, PATHINFO_EXTENSION);
+            $ext = pathinfo($basename, PATHINFO_EXTENSION);
 
-        if ($ext == "xml") {
+            if ($ext == "xml") {
             // Si l'extention est xml
-            if (!file_exists($uploaddir . $basename)) {
-                // Si le fichier n'existe pas deja
                 if (move_uploaded_file($_FILES['uploadXML']['tmp_name'], $uploadfile)) {
-                    echo("Le fichier est valide, et a été téléchargé avec succès. Voici plus d'informations :\n");
+                    echo("Le fichier est valide, et a été téléchargé avec succès.\n");
                     $fileUploaded = true;
                 } else {
                     echo("Erreur lors de l'upload du fichier.");
                 }
             } else {
-                echo("Le fichier existe déjà.\n");
+                echo("Extention du fichier non valide.");
             }
-        } else {
-            echo("Extention du fichier non valide.");
-        }
 
-        if ($fileUploaded && @simplexml_load_file($uploaddir . $basename)) {
-            // Si le fichier a bien ete uplaod et est bien un XML 
-            // @ pour ne pas afficher l'erreur
+            if ($fileUploaded && @simplexml_load_file($uploaddir . $basename)) {
+            // Si le fichier a bien ete upload et est bien charge par simplexml
+            // @ pour ne pas afficher l'erreur si le chargement ne fonctionne pas
 
             // Recuperation du XMI
-            $xml = simplexml_load_file($uploaddir . $basename);
-            $xml->registerXPathNamespace("UML", "omg.org/UML1.3");
+                $xml = simplexml_load_file($uploaddir . $basename);
+                $xml->registerXPathNamespace("UML", "omg.org/UML1.3");
 
             // Recuperation des activites/debuts/fins/decisions/liens du XMI
-            $actionStateList = $xml->xpath("//UML:ActionState");
-            $pseudoStateList = $xml->xpath("//UML:PseudoState");
-            $transitionList = $xml->xpath("//UML:Transition");
+                $actionStateList = $xml->xpath("//UML:ActionState");
+                $pseudoStateList = $xml->xpath("//UML:PseudoState");
+                $transitionList = $xml->xpath("//UML:Transition");
 
             // Creation des tableaux
-            $actionTab = array();
-            $pseudoTab = array();
-            $transitionTab = array();
-            $allTab = array();
+                $actionTab = array();
+                $pseudoTab = array();
+                $transitionTab = array();
+                $allTab = array();
 
-            foreach ($actionStateList as $actionState) {
+                foreach ($actionStateList as $actionState) {
             // Creation de chaque activite depuis le tableau
-                $actionTab[] = new Activite((string)$actionState->attributes()["xmi.id"], (string)$actionState->attributes()["name"]);
-                $allTab[] = end($actionTab);
-            }
-            foreach ($pseudoStateList as $pseudoState) {
-                if ($pseudoState->attributes()['kind'] == 'final') { 
+                    $actionTab[] = new Activite((string)$actionState->attributes()["xmi.id"], (string)$actionState->attributes()["name"]);
+                    $allTab[] = end($actionTab);
+                }
+                foreach ($pseudoStateList as $pseudoState) {
+                    if ($pseudoState->attributes()['kind'] == 'final') { 
                     // Si le pseudoState est une fin
-                    $pseudoTab[] = new Fin((string)$pseudoState->attributes()["xmi.id"], (string)$pseudoState->attributes()["name"]);
-                } else if($pseudoState->attributes()['kind'] == 'branch') { 
+                        $pseudoTab[] = new Fin((string)$pseudoState->attributes()["xmi.id"], (string)$pseudoState->attributes()["name"]);
+                    } else if($pseudoState->attributes()['kind'] == 'branch') { 
                     // Si le pseudoState est une decision
-                    $pseudoTab[] = new Decision((string)$pseudoState->attributes()["xmi.id"], (string)$pseudoState->attributes()["name"]);
-                } else { 
+                        $pseudoTab[] = new Decision((string)$pseudoState->attributes()["xmi.id"], (string)$pseudoState->attributes()["name"]);
+                    } else { 
                     // Si le pseudoState est un debut
-                    $pseudoTab[] = new Debut((string)$pseudoState->attributes()["xmi.id"], (string)$pseudoState->attributes()["name"]);
+                        $pseudoTab[] = new Debut((string)$pseudoState->attributes()["xmi.id"], (string)$pseudoState->attributes()["name"]);
+                    }
+                    $allTab[] = end($pseudoTab);
                 }
-                $allTab[] = end($pseudoTab);
-            }
 
-            foreach ($transitionList as $transition) {
-                $sourceId = (string)$transition->attributes()["source"];
-                $cibleId = (string)$transition->attributes()["target"];
-                $source = null;
-                $cible = null;
-                foreach ($allTab as $all) {
+                foreach ($transitionList as $transition) {
+                    $sourceId = (string)$transition->attributes()["source"];
+                    $cibleId = (string)$transition->attributes()["target"];
+                    $source = null;
+                    $cible = null;
+                    foreach ($allTab as $all) {
                     // Parcours de toutes les Actions pour trouver la source et la cible
-                    if ($all->getId() == $sourceId){
-                        $source = $all;
+                        if ($all->getId() == $sourceId){
+                            $source = $all;
+                        }
+                        if($all->getId() == $cibleId){
+                            $cible = $all;
+                        }
                     }
-                    if($all->getId() == $cibleId){
-                        $cible = $all;
-                    }
-                }
                 if ($cible != null && $source != null) { // Si on a bien trouve une source et une cible
                     $transitionTab[] = new Lien((string)$transition->attributes()["xmi.id"], (string)$transition->attributes()["name"], $source, $cible);
                 }
@@ -190,142 +182,162 @@ class TutorielController extends \Tiny\BaseController {
             $nomTutoriel = $_POST['inputTitre'];
             $descriptionTutoriel = $_POST['inputDescription'];
 
-            // PASSAGE DATE A LA CREATION DU TUTORIEL TODO
-            // DATETIME, DATE marche pas
-            // Format Y-m-d
-            $dateAdd = \date("Y-m-d");
+            // Date au format Y-m-d H:i:s
+            $dateAdd = date('Y-m-d H:i:s');
 
             // Passage sous forme "un-nom-de-tutoriel"
             $referenceTutoriel = str_replace(' ', '-', strtolower($nomTutoriel));
 
-            $stmt = $this->pdo->prepare("INSERT INTO Tutoriel (Nom, Description, Reference) VALUES (:nom, :description, :reference)");
-            //$stmt = $this->pdo->prepare("INSERT INTO Tutoriel (Nom, Description, DateAdd, Reference) VALUES (:nom, :description, :dateAdd :reference)");
+            $stmt = $this->pdo->prepare("INSERT INTO Tutoriel (Nom, Description, DateAdd, Reference) VALUES (:nom, :description, :dateAdd :reference)");
             $stmt->bindParam(':nom', $nomTutoriel);
             $stmt->bindParam(':description', $descriptionTutoriel);
-            //$stmt->bindParam(':dateAdd', $dateAdd);
+            $stmt->bindParam(':dateAdd', $dateAdd);
             $stmt->bindParam(':reference', $referenceTutoriel);
-            $stmt->execute();
+            $res = $stmt->execute();
+            var_dump($res);
+            if($res == FALSE){
+                //throw new \Exception('Insertion tutoriel KO');
+                exit('Insertion KO');
+            }
 
             // Recuperation de l'ID du dernier Tutoriel
             $numTutoriel = $this->pdo->lastInsertId();
 
+            // Recuperation de l'ID Fonctionnalite passe en POST TODO
+            $numFonctionnalite = $_POST['selectFonct'];
+            /*
+            // Mise a jour de la fonctionnalite avec l'ID du Tutoriel
+            $stmt = $this->pdo->prepare("UPDATE Fonctionnalite SET NumTutoriel = :numTutoriel WHERE NumFonctionnalite = :numFonctionnalite");
+                $stmt->bindParam(':numTutoriel', $numTutoriel);
+                $stmt->bindParam(':numFonctionnalite', $numFonctionnalite);
+                $stmt->execute();
+            */
+
             // Creation des Etapes dans la base de données
-            foreach ($actionTab as $action) {
+                foreach ($actionTab as $action) {
 
                 // Récupération de l'ID dans le XML
-                $idGenereAction = $action->getId();
+                    $idGenereAction = $action->getId();
                 // Récupération de la description
-                $libelleAction = $action->getLibelle();
+                    $libelleAction = $action->getLibelle();
 
                 // Ajout de l'Etape dans la BDD
-                $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                $stmt->bindParam(':description', $libelleAction);
-                $stmt->bindParam(':numTutoriel', $numTutoriel);
-                $stmt->bindParam(':idGenere', $idGenereAction);
-                $stmt->execute();
-            }
+                    $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    $stmt->bindParam(':description', $libelleAction);
+                    $stmt->bindParam(':numTutoriel', $numTutoriel);
+                    $stmt->bindParam(':idGenere', $idGenereAction);
+                    $stmt->execute();
+                }
 
             // Creation des Debuts/Fins/Choix
-            foreach ($pseudoTab as $pseudo) {
+                foreach ($pseudoTab as $pseudo) {
 
                 // Récupération de l'ID dans le XML
-                $idGenerePseudo = $pseudo->getId();
+                    $idGenerePseudo = $pseudo->getId();
                 // Récupération de la description
-                $libellePseudo = $pseudo->getLibelle();
+                    $libellePseudo = $pseudo->getLibelle();
 
-                if ($pseudo instanceof Decision) {
+                    if ($pseudo instanceof Decision) {
                     // Si c'est un choix
-                    $stmt = $this->pdo->prepare("INSERT INTO Choix (Libelle, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                } else {
-                    $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                        $stmt = $this->pdo->prepare("INSERT INTO Choix (Libelle, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    } else {
+                        $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    }
+                    $stmt->bindParam(':description', $libellePseudo);
+                    $stmt->bindParam(':numTutoriel', $numTutoriel);
+                    $stmt->bindParam(':idGenere', $idGenerePseudo);
+                    $stmt->execute();    
                 }
-                $stmt->bindParam(':description', $libellePseudo);
-                $stmt->bindParam(':numTutoriel', $numTutoriel);
-                $stmt->bindParam(':idGenere', $idGenerePseudo);
-                $stmt->execute();    
-            }
 
-            foreach ($transitionTab as $transition) {
+                foreach ($transitionTab as $transition) {
 
                 // Recuperation objet source et ID source
-                $sourceLien = $transition->getSource();
-                $idGenereSource = $sourceLien->getId();
+                    $sourceLien = $transition->getSource();
+                    $idGenereSource = $sourceLien->getId();
 
                 // Recuperation objet cible et ID cible
-                $cibleLien = $transition->getCible();
-                $idGenereCible = $cibleLien->getId();
+                    $cibleLien = $transition->getCible();
+                    $idGenereCible = $cibleLien->getId();
 
                 // Recuperation libelle Lien et ID Lien
-                $idGenereLien = $transition->getId();
-                $libelleLien = $transition->getLibelle();
+                    $idGenereLien = $transition->getId();
+                    $libelleLien = $transition->getLibelle();
 
                 // Definition type source/cible
-                $typeSource = $sourceLien instanceof Decision ? "Choix" : "Etape";
-                $typeCible = $cibleLien instanceof Decision ? "Choix" : "Etape";
+                    $typeSource = $sourceLien instanceof Decision ? "Choix" : "Etape";
+                    $typeCible = $cibleLien instanceof Decision ? "Choix" : "Etape";
 
-                if ($sourceLien instanceof Decision) {
+                    if ($sourceLien instanceof Decision) {
                     // Si la source est un Choix
-                    if ($transition->getLibelle() !== "") {
+                        if ($transition->getLibelle() !== "") {
                         // Si le Lien a un libelle
                         // Recuperation ID Choix source
-                        $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereSource");
+                            $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereSource");
+                            $stmt->bindParam(':idGenereSource', $idGenereSource);
+                            $stmt->execute();
+                            while ($row = $stmt->fetch()) {
+                                $idSource = $row['NumChoix'];
+                            }
+                        } else {
+                        // Sinon on annule la transaction
+                            echo "<script>alert(\"Lien sans libelle\")</script>";
+                            $this->pdo->rollback();
+                        }
+                    } else {
+                    // Si la source est une Etape/Debut/Fin
+                    // Recuperation ID Etape source
+                        $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereSource");
                         $stmt->bindParam(':idGenereSource', $idGenereSource);
                         $stmt->execute();
                         while ($row = $stmt->fetch()) {
-                            $idSource = $row['NumChoix'];
+                            $idSource = $row['NumEtape'];
                         }
-                    } else {
-                        // Sinon on annule la transaction
-                        echo "<script>alert(\"Lien sans libelle\")</script>";
-                        $this->pdo->rollback();
                     }
-                } else {
-                    // Si la source est une Etape/Debut/Fin
-                    // Recuperation ID Etape source
-                    $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereSource");
-                    $stmt->bindParam(':idGenereSource', $idGenereSource);
-                    $stmt->execute();
-                    while ($row = $stmt->fetch()) {
-                        $idSource = $row['NumEtape'];
-                    }
-                }
-                if ($cibleLien instanceof Decision) {
+                    if ($cibleLien instanceof Decision) {
                     // Si la cible est un Choix
                     // Recuperation ID Choix cible
-                    $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereCible");
-                    $stmt->bindParam(':idGenereCible', $idGenereCible);
-                    $stmt->execute();
-                    while ($row = $stmt->fetch()) {
-                        $idCible = $row['NumChoix'];
-                    }
-                } else {
+                        $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereCible");
+                        $stmt->bindParam(':idGenereCible', $idGenereCible);
+                        $stmt->execute();
+                        while ($row = $stmt->fetch()) {
+                            $idCible = $row['NumChoix'];
+                        }
+                    } else {
                     // Si la cible est une Etape/Debut/Fin
                     // Recuperation ID Etape cible
-                    $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereCible");
-                    $stmt->bindParam(':idGenereCible', $idGenereCible);
-                    $stmt->execute();
-                    while ($row = $stmt->fetch()) {
-                        $idCible = $row['NumEtape'];
+                        $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereCible");
+                        $stmt->bindParam(':idGenereCible', $idGenereCible);
+                        $stmt->execute();
+                        while ($row = $stmt->fetch()) {
+                            $idCible = $row['NumEtape'];
+                        }
                     }
-                }
 
                 // Ajout du Lien en BDD
-                $stmt = $this->pdo->prepare("INSERT INTO Lien (Libelle, NumSource, TypeSource, NumCible, TypeCible, NumTutoriel, IdGenere) 
-                    VALUES (:libelle, :numSource, :typeSource, :numCible, :typeCible, :numTutoriel, :idGenere)");
-                $stmt->bindParam(':libelle', $libelleLien);
-                $stmt->bindParam(':numSource', $idSource);
-                $stmt->bindParam(':typeSource', $typeSource);
-                $stmt->bindParam(':numCible', $idCible);
-                $stmt->bindParam(':typeCible', $typeCible);
-                $stmt->bindParam(':numTutoriel', $numTutoriel);
-                $stmt->bindParam(':idGenere', $idGenereLien);
-                $stmt->execute();
-            }
+                    $stmt = $this->pdo->prepare("INSERT INTO Lien (Libelle, NumSource, TypeSource, NumCible, TypeCible, NumTutoriel, IdGenere) 
+                        VALUES (:libelle, :numSource, :typeSource, :numCible, :typeCible, :numTutoriel, :idGenere)");
+                    $stmt->bindParam(':libelle', $libelleLien);
+                    $stmt->bindParam(':numSource', $idSource);
+                    $stmt->bindParam(':typeSource', $typeSource);
+                    $stmt->bindParam(':numCible', $idCible);
+                    $stmt->bindParam(':typeCible', $typeCible);
+                    $stmt->bindParam(':numTutoriel', $numTutoriel);
+                    $stmt->bindParam(':idGenere', $idGenereLien);
+                    $stmt->execute();
+                }
 
-            // REMPLACER ROLLBACK PAR COMMIT
+            // TODO REMPLACER ROLLBACK PAR COMMIT
             // Validation de la transaction
-            $this->pdo->rollback();
+                $this->pdo->commit();
+            }
+        } catch(\PDOException $e) {
+            echo($e->getMessage());
+        } catch(\Exception $e) {
+            echo($e->getMessage());
         }
+
+        // Suppression du fichier XML
+        unlink($uploaddir . $basename);
     }
 
     /**

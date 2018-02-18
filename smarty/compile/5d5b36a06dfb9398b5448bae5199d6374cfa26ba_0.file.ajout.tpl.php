@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.30, created on 2018-02-13 10:51:27
+/* Smarty version 3.1.30, created on 2018-02-13 15:29:57
   from "C:\Users\Asshritt\Documents\__Projets\IUP_MIAGE\ProjetAnnee\nidoc\template\ajout.tpl" */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.30',
-  'unifunc' => 'content_5a82c32fa07d01_47972483',
+  'unifunc' => 'content_5a830475908861_92911154',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '5d5b36a06dfb9398b5448bae5199d6374cfa26ba' => 
     array (
       0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP_MIAGE\\ProjetAnnee\\nidoc\\template\\ajout.tpl',
-      1 => 1518519086,
+      1 => 1518535778,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:header.tpl' => 1,
   ),
 ),false)) {
-function content_5a82c32fa07d01_47972483 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5a830475908861_92911154 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_subTemplateRender("file:header.tpl", $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
 	
@@ -40,7 +40,7 @@ if ($_from !== null) {
 foreach ($_from as $_smarty_tpl->tpl_vars['fonct']->value) {
 ?>
 							<option id="<?php echo $_smarty_tpl->tpl_vars['fonct']->value['NumFonctionnalite'];?>
-"><?php echo $_smarty_tpl->tpl_vars['fonct']->value['Nom'];?>
+" name="test"><?php echo $_smarty_tpl->tpl_vars['fonct']->value['Nom'];?>
 </option>
 							<?php
 }

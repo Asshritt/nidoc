@@ -8,7 +8,7 @@
 						<select class="form-control" id="selectFonct" name="selectFonct" required>
 							{if $fonctionnalites|@count gt 0}
 							{foreach from=$fonctionnalites item=fonct}
-							<option id="{$fonct['NumFonctionnalite']}">{$fonct['Nom']}</option>
+							<option id="{$fonct['NumFonctionnalite']}" name="test">{$fonct['Nom']}</option>
 							{/foreach}
 							{else}
 							<option disabled selected>Pas de fonctionnalités disponibles</option>
@@ -24,3 +24,8 @@
 		</div>
 	</div>
 </body>
+{literal}
+<script type="text/javascript">
+	
+</script>
+{/literal}

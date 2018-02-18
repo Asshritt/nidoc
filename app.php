@@ -166,8 +166,9 @@ try {
 	echo $router->getMatchingRoute('/' . $_GET['url']);
 	die();
 } catch(Exception $e) {
-	header("HTTP/1.1 404 Not Found");
-	readfile(__DIR__."/template/error404.html");
+	//header("HTTP/1.1 404 Not Found");
+	//readfile(__DIR__."/template/error404.html");
+	var_dump($e);
 	die();
 }
 
