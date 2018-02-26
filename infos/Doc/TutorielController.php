@@ -188,13 +188,12 @@ class TutorielController extends \Tiny\BaseController {
             // Passage sous forme "un-nom-de-tutoriel"
             $referenceTutoriel = str_replace(' ', '-', strtolower($nomTutoriel));
 
-            $stmt = $this->pdo->prepare("INSERT INTO Tutoriel (Nom, Description, DateAdd, Reference) VALUES (:nom, :description, :dateAdd :reference)");
+            $stmt = $this->pdo->prepare("INSERT INTO Tutoriel (Nom, Description, DateAdd, Reference) VALUES (:nom, :description, :dateAdd, :reference)");
             $stmt->bindParam(':nom', $nomTutoriel);
             $stmt->bindParam(':description', $descriptionTutoriel);
             $stmt->bindParam(':dateAdd', $dateAdd);
             $stmt->bindParam(':reference', $referenceTutoriel);
             $res = $stmt->execute();
-            var_dump($res);
             if($res == FALSE){
                 //throw new \Exception('Insertion tutoriel KO');
                 exit('Insertion KO');
@@ -205,13 +204,13 @@ class TutorielController extends \Tiny\BaseController {
 
             // Recuperation de l'ID Fonctionnalite passe en POST TODO
             $numFonctionnalite = $_POST['selectFonct'];
-            /*
+
             // Mise a jour de la fonctionnalite avec l'ID du Tutoriel
             $stmt = $this->pdo->prepare("UPDATE Fonctionnalite SET NumTutoriel = :numTutoriel WHERE NumFonctionnalite = :numFonctionnalite");
-                $stmt->bindParam(':numTutoriel', $numTutoriel);
-                $stmt->bindParam(':numFonctionnalite', $numFonctionnalite);
-                $stmt->execute();
-            */
+            $stmt->bindParam(':numTutoriel', $numTutoriel);
+            $stmt->bindParam(':numFonctionnalite', $numFonctionnalite);
+            $stmt->execute();
+
 
             // Creation des Etapes dans la base de données
                 foreach ($actionTab as $action) {
