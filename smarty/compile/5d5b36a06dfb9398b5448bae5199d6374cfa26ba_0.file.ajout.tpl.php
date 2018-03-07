@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.30, created on 2018-02-26 13:34:12
+/* Smarty version 3.1.30, created on 2018-03-07 11:48:39
   from "C:\Users\Asshritt\Documents\__Projets\IUP_MIAGE\ProjetAnnee\nidoc\template\ajout.tpl" */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.30',
-  'unifunc' => 'content_5a940cd4e82859_24509602',
+  'unifunc' => 'content_5a9fd1978a3927_47656251',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '5d5b36a06dfb9398b5448bae5199d6374cfa26ba' => 
     array (
       0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP_MIAGE\\ProjetAnnee\\nidoc\\template\\ajout.tpl',
-      1 => 1519652015,
+      1 => 1520423317,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:header.tpl' => 1,
   ),
 ),false)) {
-function content_5a940cd4e82859_24509602 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5a9fd1978a3927_47656251 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_subTemplateRender("file:header.tpl", $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
 	
@@ -49,7 +49,7 @@ $_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl);
 ?>
 
 							<?php } else { ?>
-							<option disabled selected>Pas de fonctionnalités disponibles</option>
+							<option disabled>Pas de fonctionnalités disponibles</option>
 							<?php }?>
 						</select>
 						<input type="text" id="inputTitre" name="inputTitre" placeholder="Titre du tutoriel" class="form-control" aria-describedby="basic-addon1" required>

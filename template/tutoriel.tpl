@@ -1,12 +1,14 @@
 {include file="header.tpl"}
-<!-- {$etapes|@var_dump} -->
+{$debut|@var_dump}
 <body>
 	<div class="container">
 		<div class="row">
 			<div class="col-md-4">
 				<div class="list-group" id="etapes">
-					{if $etapes|@count gt 0}
-					{foreach from=$etapes item=etape}
+					{if $debut|@count gt 0}
+					{foreach from=$debut item=etape}
+					{if $etape['Description'] == "Début"}
+					{/if}
 					<button id="{$etape['NumEtape']}" type="button" class="list-group-item">{$etape['Description']}</button>
 					{/foreach}
 					{else}

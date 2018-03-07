@@ -65,6 +65,20 @@ class TutorielController extends \Tiny\BaseController {
         return $this->smarty->fetch('informations.tpl');
     }
 
+    public function getSuivant($debut) {
+        $idGen = $debut[0]['IdGenere'];
+        $idTuto = $debut[0]['NumTutoriel'];
+        var_dump($debut);
+        echo "SELECT * FROM Lien WHERE NumSource = (SELECT NumEtape FROM Etape WHERE NumTutoriel = " . $idTuto . " AND IdGenere = '" . $idGen . "')";
+        $sql = $this->pdo->prepare("SELECT * FROM Lien WHERE NumSource = (SELECT NumEtape FROM Etape WHERE NumTutoriel = :idTuto AND IdGenere = ':idGen')");
+
+        $debut = array();
+        foreach ($results as $result) {
+            $debut[] = $result;
+        }
+        var_dump($debut);
+    }
+
     /**
      * @pattern /fonctionnalite/{id}
      * @parameter id int
@@ -73,16 +87,17 @@ class TutorielController extends \Tiny\BaseController {
 
     public function fonctionnaliteAction($id) {
 
-        // Récupération des projets de la base de données
-        $results = $this->pdo->query('SELECT * FROM Etape WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+        // Récupération des étapes de la base de données
+        $results = $this->pdo->query('SELECT * FROM Etape WHERE Description = "Début" AND NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
 
-        $res = array();
+        $debut = array();
         foreach ($results as $result) {
-            $res[] = $result;
+            $debut[] = $result;
         }
+        var_dump($debut);
 
         $this->smarty->assign('page', 'Tutoriel');
-        $this->smarty->assign('etapes', $res);
+        $this->smarty->assign('debut', $debut);
         return $this->smarty->fetch('tutoriel.tpl');
     }
 
@@ -98,7 +113,7 @@ class TutorielController extends \Tiny\BaseController {
             $uploaddir = $this->config['root'] . '/temp/';
         // Nom complet avec dossier
             $uploadfile = $uploaddir . $basename;
-        // Variable pour check si le fichier est coorect et a bien ete upload 
+        // Variable pour check si le fichier est corect et a bien ete upload 
             $fileUploaded = false;
         // Recuperation extention fichier upload
             $ext = pathinfo($basename, PATHINFO_EXTENSION);
@@ -106,7 +121,6 @@ class TutorielController extends \Tiny\BaseController {
             if ($ext == "xml") {
             // Si l'extention est xml
                 if (move_uploaded_file($_FILES['uploadXML']['tmp_name'], $uploadfile)) {
-                    echo("Le fichier est valide, et a été téléchargé avec succès.\n");
                     $fileUploaded = true;
                 } else {
                     echo("Erreur lors de l'upload du fichier.");
@@ -195,8 +209,7 @@ class TutorielController extends \Tiny\BaseController {
             $stmt->bindParam(':reference', $referenceTutoriel);
             $res = $stmt->execute();
             if($res == FALSE){
-                //throw new \Exception('Insertion tutoriel KO');
-                exit('Insertion KO');
+                throw new \Exception('Problème lors de l\'insertion du tutoriel.');
             }
 
             // Recuperation de l'ID du dernier Tutoriel
@@ -220,12 +233,18 @@ class TutorielController extends \Tiny\BaseController {
                 // Récupération de la description
                     $libelleAction = $action->getLibelle();
 
-                // Ajout de l'Etape dans la BDD
-                    $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                    $stmt->bindParam(':description', $libelleAction);
-                    $stmt->bindParam(':numTutoriel', $numTutoriel);
-                    $stmt->bindParam(':idGenere', $idGenereAction);
-                    $stmt->execute();
+                    if (ctype_space($libelleAction) || empty($libelleAction)) {
+                        $this->pdo->rollback();
+                        throw new \Exception('Fichier invalide, il manque un libellé.');
+                    } else {
+                    // Ajout de l'Etape dans la BDD
+                        $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                        $stmt->bindParam(':description', $libelleAction);
+                        $stmt->bindParam(':numTutoriel', $numTutoriel);
+                        $stmt->bindParam(':idGenere', $idGenereAction);
+                        $stmt->execute();
+                    }
+
                 }
 
             // Creation des Debuts/Fins/Choix
@@ -236,16 +255,21 @@ class TutorielController extends \Tiny\BaseController {
                 // Récupération de la description
                     $libellePseudo = $pseudo->getLibelle();
 
-                    if ($pseudo instanceof Decision) {
-                    // Si c'est un choix
-                        $stmt = $this->pdo->prepare("INSERT INTO Choix (Libelle, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    if (ctype_space($libellePseudo) || empty($libellePseudo)) {
+                        $this->pdo->rollback();
+                        throw new \Exception('Fichier invalide, il manque un libellé.');
                     } else {
-                        $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                    }
-                    $stmt->bindParam(':description', $libellePseudo);
-                    $stmt->bindParam(':numTutoriel', $numTutoriel);
-                    $stmt->bindParam(':idGenere', $idGenerePseudo);
-                    $stmt->execute();    
+                        if ($pseudo instanceof Decision) {
+                        // Si c'est un choix
+                            $stmt = $this->pdo->prepare("INSERT INTO Choix (Libelle, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                        } else {
+                            $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                        }
+                        $stmt->bindParam(':description', $libellePseudo);
+                        $stmt->bindParam(':numTutoriel', $numTutoriel);
+                        $stmt->bindParam(':idGenere', $idGenerePseudo);
+                        $stmt->execute();  
+                    }  
                 }
 
                 foreach ($transitionTab as $transition) {
@@ -279,8 +303,8 @@ class TutorielController extends \Tiny\BaseController {
                             }
                         } else {
                         // Sinon on annule la transaction
-                            echo "<script>alert(\"Lien sans libelle\")</script>";
                             $this->pdo->rollback();
+                            throw new \Exception('Fichier invalide, il manque un libellé.');
                         }
                     } else {
                     // Si la source est une Etape/Debut/Fin
@@ -325,9 +349,9 @@ class TutorielController extends \Tiny\BaseController {
                     $stmt->execute();
                 }
 
-            // TODO REMPLACER ROLLBACK PAR COMMIT
             // Validation de la transaction
                 $this->pdo->commit();
+                exit("Le tutoriel à bien été enregistré.");
             }
         } catch(\PDOException $e) {
             echo($e->getMessage());

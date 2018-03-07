@@ -11,7 +11,7 @@
 							<option id="{$fonct['NumFonctionnalite']}" name="test">{$fonct['Nom']}</option>
 							{/foreach}
 							{else}
-							<option disabled selected>Pas de fonctionnalités disponibles</option>
+							<option disabled>Pas de fonctionnalités disponibles</option>
 							{/if}
 						</select>
 						<input type="text" id="inputTitre" name="inputTitre" placeholder="Titre du tutoriel" class="form-control" aria-describedby="basic-addon1" required>
