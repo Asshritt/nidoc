@@ -65,20 +65,6 @@ class TutorielController extends \Tiny\BaseController {
         return $this->smarty->fetch('informations.tpl');
     }
 
-    public function getSuivant($debut) {
-        $idGen = $debut[0]['IdGenere'];
-        $idTuto = $debut[0]['NumTutoriel'];
-        var_dump($debut);
-        echo "SELECT * FROM Lien WHERE NumSource = (SELECT NumEtape FROM Etape WHERE NumTutoriel = " . $idTuto . " AND IdGenere = '" . $idGen . "')";
-        $sql = $this->pdo->prepare("SELECT * FROM Lien WHERE NumSource = (SELECT NumEtape FROM Etape WHERE NumTutoriel = :idTuto AND IdGenere = ':idGen')");
-
-        $debut = array();
-        foreach ($results as $result) {
-            $debut[] = $result;
-        }
-        var_dump($debut);
-    }
-
     /**
      * @pattern /fonctionnalite/{id}
      * @parameter id int
@@ -88,16 +74,108 @@ class TutorielController extends \Tiny\BaseController {
     public function fonctionnaliteAction($id) {
 
         // Récupération des étapes de la base de données
-        $results = $this->pdo->query('SELECT * FROM Etape WHERE Description = "Début" AND NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+        $results = $this->pdo->query('SELECT * FROM Etape WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
 
-        $debut = array();
+        $etapes = array();
         foreach ($results as $result) {
-            $debut[] = $result;
+            $etapes[] = $result;
         }
-        var_dump($debut);
 
+        // Récupération des étapes de la base de données
+        $results = $this->pdo->query('SELECT * FROM Choix WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+
+        $choix = array();
+        foreach ($results as $result) {
+            $choix[] = $result;
+        }
+
+        // Récupération des étapes de la base de données
+        $results = $this->pdo->query('SELECT * FROM Lien WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+
+        $liens = array();
+        foreach ($results as $result) {
+            $liens[] = $result;
+        }
+
+        //var_dump($choix);
+        //var_dump($etapes);
+        //var_dump($liens);
+
+        $entities = array();
+
+        // Chercher le début :
+        
+        /*SELECT * FROM Etape
+        WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = 1)
+        AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape')
+        AND Etape.NumEtape NOT IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')*/
+
+        // Chercher la fin :
+
+        /*SELECT * FROM Etape
+        WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = 1)
+        AND Etape.NumEtape NOT IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape')
+        AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')*/
+
+
+        $debut = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $id . ") AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape NOT IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
+
+
+        $fin = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $id . ") AND Etape.NumEtape NOT IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
+
+        //var_dump($debut);
+
+        $numTutoriel = $debut['NumTutoriel'];
+
+        $etape = $debut;
+
+        do {
+            if (array_key_exists('NumEtape', $etape)) {
+                $numEtape = $etape['NumEtape'];
+            } else if (array_key_exists('NumChoix', $etape)){
+                $numEtape = $etape['NumChoix'];
+            }
+            /* else if (array_key_exists('NumEtape', $etape[0])){
+                $numEtape = $etape[0]['NumEtape'];
+            } else if (array_key_exists('NumChoix', $etape[0])){
+                $numEtape = $etape[0]['NumChoix'];
+            }*/
+
+            $typeCible = $this->pdo->query("SELECT TypeCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " . $debut['NumTutoriel'])->fetch()[0];
+            //var_dump("type" . $typeCible);
+
+            //var_dump($etape);
+            //var_dump($numEtape);
+            //var_dump($numTutoriel);
+
+            if ($typeCible == "Etape") {
+                //echo ('etape ' . $etape['Description'] . '<br>');
+                $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
+                 . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
+            } else if ($typeCible == "Choix"){
+                //echo ('choix ' . $etape['Description']);
+                //var_dump($etape);
+                $suivant = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
+                    . $numTutoriel . " AND TypeCible = 'Choix')")->fetch();
+
+            }
+
+            $etape = $suivant;
+            if ($suivant != $fin) {
+                $entities[] = $suivant;
+            }
+
+        } while ($typeCible == "Etape"); // Jusqu'a ce qu'on trouve la fin
+       // var_dump($entities);
+
+
+        // Parcours de mon arbre
+        // A chaque sortie d'entite, la stocker dans le tableau $entities
+
+        
         $this->smarty->assign('page', 'Tutoriel');
-        $this->smarty->assign('debut', $debut);
+        $this->smarty->assign('etapes', $entities);
+        $this->smarty->assign('tutoriel', $numTutoriel);
         return $this->smarty->fetch('tutoriel.tpl');
     }
 
@@ -113,23 +191,23 @@ class TutorielController extends \Tiny\BaseController {
             $uploaddir = $this->config['root'] . '/temp/';
         // Nom complet avec dossier
             $uploadfile = $uploaddir . $basename;
-        // Variable pour check si le fichier est corect et a bien ete upload 
-            $fileUploaded = false;
         // Recuperation extention fichier upload
             $ext = pathinfo($basename, PATHINFO_EXTENSION);
 
             if ($ext == "xml") {
             // Si l'extention est xml
                 if (move_uploaded_file($_FILES['uploadXML']['tmp_name'], $uploadfile)) {
-                    $fileUploaded = true;
+
                 } else {
-                    echo("Erreur lors de l'upload du fichier.");
+                    exit("Erreur lors de l'upload du fichier.");
                 }
             } else {
-                echo("Extention du fichier non valide.");
+                exit("Extention du fichier non valide.");
             }
 
-            if ($fileUploaded && @simplexml_load_file($uploaddir . $basename)) {
+            libxml_use_internal_errors(TRUE);
+
+            if (simplexml_load_file($uploaddir . $basename)) {
             // Si le fichier a bien ete upload et est bien charge par simplexml
             // @ pour ne pas afficher l'erreur si le chargement ne fonctionne pas
 
@@ -226,142 +304,151 @@ class TutorielController extends \Tiny\BaseController {
 
 
             // Creation des Etapes dans la base de données
-                foreach ($actionTab as $action) {
+            foreach ($actionTab as $action) {
 
                 // Récupération de l'ID dans le XML
-                    $idGenereAction = $action->getId();
+                $idGenereAction = $action->getId();
                 // Récupération de la description
-                    $libelleAction = $action->getLibelle();
+                $libelleAction = $action->getLibelle();
 
-                    if (ctype_space($libelleAction) || empty($libelleAction)) {
-                        $this->pdo->rollback();
-                        throw new \Exception('Fichier invalide, il manque un libellé.');
-                    } else {
+                if (ctype_space($libelleAction) || empty($libelleAction)) {
+                    $this->pdo->rollback();
+                    throw new \Exception('Fichier invalide, il manque un libellé.');
+                } else {
                     // Ajout de l'Etape dans la BDD
-                        $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                        $stmt->bindParam(':description', $libelleAction);
-                        $stmt->bindParam(':numTutoriel', $numTutoriel);
-                        $stmt->bindParam(':idGenere', $idGenereAction);
-                        $stmt->execute();
-                    }
-
-                }
-
-            // Creation des Debuts/Fins/Choix
-                foreach ($pseudoTab as $pseudo) {
-
-                // Récupération de l'ID dans le XML
-                    $idGenerePseudo = $pseudo->getId();
-                // Récupération de la description
-                    $libellePseudo = $pseudo->getLibelle();
-
-                    if (ctype_space($libellePseudo) || empty($libellePseudo)) {
-                        $this->pdo->rollback();
-                        throw new \Exception('Fichier invalide, il manque un libellé.');
-                    } else {
-                        if ($pseudo instanceof Decision) {
-                        // Si c'est un choix
-                            $stmt = $this->pdo->prepare("INSERT INTO Choix (Libelle, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                        } else {
-                            $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
-                        }
-                        $stmt->bindParam(':description', $libellePseudo);
-                        $stmt->bindParam(':numTutoriel', $numTutoriel);
-                        $stmt->bindParam(':idGenere', $idGenerePseudo);
-                        $stmt->execute();  
-                    }  
-                }
-
-                foreach ($transitionTab as $transition) {
-
-                // Recuperation objet source et ID source
-                    $sourceLien = $transition->getSource();
-                    $idGenereSource = $sourceLien->getId();
-
-                // Recuperation objet cible et ID cible
-                    $cibleLien = $transition->getCible();
-                    $idGenereCible = $cibleLien->getId();
-
-                // Recuperation libelle Lien et ID Lien
-                    $idGenereLien = $transition->getId();
-                    $libelleLien = $transition->getLibelle();
-
-                // Definition type source/cible
-                    $typeSource = $sourceLien instanceof Decision ? "Choix" : "Etape";
-                    $typeCible = $cibleLien instanceof Decision ? "Choix" : "Etape";
-
-                    if ($sourceLien instanceof Decision) {
-                    // Si la source est un Choix
-                        if ($transition->getLibelle() !== "") {
-                        // Si le Lien a un libelle
-                        // Recuperation ID Choix source
-                            $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereSource");
-                            $stmt->bindParam(':idGenereSource', $idGenereSource);
-                            $stmt->execute();
-                            while ($row = $stmt->fetch()) {
-                                $idSource = $row['NumChoix'];
-                            }
-                        } else {
-                        // Sinon on annule la transaction
-                            $this->pdo->rollback();
-                            throw new \Exception('Fichier invalide, il manque un libellé.');
-                        }
-                    } else {
-                    // Si la source est une Etape/Debut/Fin
-                    // Recuperation ID Etape source
-                        $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereSource");
-                        $stmt->bindParam(':idGenereSource', $idGenereSource);
-                        $stmt->execute();
-                        while ($row = $stmt->fetch()) {
-                            $idSource = $row['NumEtape'];
-                        }
-                    }
-                    if ($cibleLien instanceof Decision) {
-                    // Si la cible est un Choix
-                    // Recuperation ID Choix cible
-                        $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereCible");
-                        $stmt->bindParam(':idGenereCible', $idGenereCible);
-                        $stmt->execute();
-                        while ($row = $stmt->fetch()) {
-                            $idCible = $row['NumChoix'];
-                        }
-                    } else {
-                    // Si la cible est une Etape/Debut/Fin
-                    // Recuperation ID Etape cible
-                        $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereCible");
-                        $stmt->bindParam(':idGenereCible', $idGenereCible);
-                        $stmt->execute();
-                        while ($row = $stmt->fetch()) {
-                            $idCible = $row['NumEtape'];
-                        }
-                    }
-
-                // Ajout du Lien en BDD
-                    $stmt = $this->pdo->prepare("INSERT INTO Lien (Libelle, NumSource, TypeSource, NumCible, TypeCible, NumTutoriel, IdGenere) 
-                        VALUES (:libelle, :numSource, :typeSource, :numCible, :typeCible, :numTutoriel, :idGenere)");
-                    $stmt->bindParam(':libelle', $libelleLien);
-                    $stmt->bindParam(':numSource', $idSource);
-                    $stmt->bindParam(':typeSource', $typeSource);
-                    $stmt->bindParam(':numCible', $idCible);
-                    $stmt->bindParam(':typeCible', $typeCible);
+                    $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    $stmt->bindParam(':description', $libelleAction);
                     $stmt->bindParam(':numTutoriel', $numTutoriel);
-                    $stmt->bindParam(':idGenere', $idGenereLien);
+                    $stmt->bindParam(':idGenere', $idGenereAction);
                     $stmt->execute();
                 }
 
-            // Validation de la transaction
-                $this->pdo->commit();
-                exit("Le tutoriel à bien été enregistré.");
             }
-        } catch(\PDOException $e) {
-            echo($e->getMessage());
-        } catch(\Exception $e) {
-            echo($e->getMessage());
+
+            // Creation des Debuts/Fins/Choix
+            foreach ($pseudoTab as $pseudo) {
+
+                // Récupération de l'ID dans le XML
+                $idGenerePseudo = $pseudo->getId();
+                // Récupération de la description
+                $libellePseudo = $pseudo->getLibelle();
+
+                if (ctype_space($libellePseudo) || empty($libellePseudo)) {
+                    $this->pdo->rollback();
+                    throw new \Exception('Fichier invalide, il manque un libellé.');
+                } else {
+                    if ($pseudo instanceof Decision) {
+                        // Si c'est un choix
+                        $stmt = $this->pdo->prepare("INSERT INTO Choix (Libelle, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    } else {
+                        $stmt = $this->pdo->prepare("INSERT INTO Etape (Description, NumTutoriel, IdGenere) VALUES (:description, :numTutoriel, :idGenere)");
+                    }
+                    $stmt->bindParam(':description', $libellePseudo);
+                    $stmt->bindParam(':numTutoriel', $numTutoriel);
+                    $stmt->bindParam(':idGenere', $idGenerePseudo);
+                    $stmt->execute();  
+                }  
+            }
+
+            foreach ($transitionTab as $transition) {
+
+                // Recuperation objet source et ID source
+                $sourceLien = $transition->getSource();
+                $idGenereSource = $sourceLien->getId();
+
+                // Recuperation objet cible et ID cible
+                $cibleLien = $transition->getCible();
+                $idGenereCible = $cibleLien->getId();
+
+                // Recuperation libelle Lien et ID Lien
+                $idGenereLien = $transition->getId();
+                $libelleLien = $transition->getLibelle();
+
+                // Definition type source/cible
+                $typeSource = $sourceLien instanceof Decision ? "Choix" : "Etape";
+                $typeCible = $cibleLien instanceof Decision ? "Choix" : "Etape";
+
+                if ($sourceLien instanceof Decision) {
+                    // Si la source est un Choix
+                    if ($transition->getLibelle() !== "") {
+                        // Si le Lien a un libelle
+                        // Recuperation ID Choix source
+                        $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereSource");
+                        $stmt->bindParam(':idGenereSource', $idGenereSource);
+                        $stmt->execute();
+                        while ($row = $stmt->fetch()) {
+                            $idSource = $row['NumChoix'];
+                        }
+                    } else {
+                        // Sinon on annule la transaction
+                        $this->pdo->rollback();
+                        throw new \Exception('Fichier invalide, il manque un libellé.');
+                    }
+                } else {
+                    // Si la source est une Etape/Debut/Fin
+                    // Recuperation ID Etape source
+                    $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereSource");
+                    $stmt->bindParam(':idGenereSource', $idGenereSource);
+                    $stmt->execute();
+                    while ($row = $stmt->fetch()) {
+                        $idSource = $row['NumEtape'];
+                    }
+                }
+                if ($cibleLien instanceof Decision) {
+                    // Si la cible est un Choix
+                    // Recuperation ID Choix cible
+                    $stmt = $this->pdo->prepare("SELECT NumChoix FROM Choix WHERE IdGenere = :idGenereCible");
+                    $stmt->bindParam(':idGenereCible', $idGenereCible);
+                    $stmt->execute();
+                    while ($row = $stmt->fetch()) {
+                        $idCible = $row['NumChoix'];
+                    }
+                } else {
+                    // Si la cible est une Etape/Debut/Fin
+                    // Recuperation ID Etape cible
+                    $stmt = $this->pdo->prepare("SELECT NumEtape FROM Etape WHERE IdGenere = :idGenereCible");
+                    $stmt->bindParam(':idGenereCible', $idGenereCible);
+                    $stmt->execute();
+                    while ($row = $stmt->fetch()) {
+                        $idCible = $row['NumEtape'];
+                    }
+                }
+
+                // Ajout du Lien en BDD
+                $stmt = $this->pdo->prepare("INSERT INTO Lien (Libelle, NumSource, TypeSource, NumCible, TypeCible, NumTutoriel, IdGenere) 
+                    VALUES (:libelle, :numSource, :typeSource, :numCible, :typeCible, :numTutoriel, :idGenere)");
+                $stmt->bindParam(':libelle', $libelleLien);
+                $stmt->bindParam(':numSource', $idSource);
+                $stmt->bindParam(':typeSource', $typeSource);
+                $stmt->bindParam(':numCible', $idCible);
+                $stmt->bindParam(':typeCible', $typeCible);
+                $stmt->bindParam(':numTutoriel', $numTutoriel);
+                $stmt->bindParam(':idGenere', $idGenereLien);
+                $stmt->execute();
+            }
+
+            // Validation de la transaction
+            $this->pdo->commit();
+            echo("Le tutoriel à bien été enregistré.");
+        } else {
+                // Exception
+
+            $libxmlErrors = libxml_get_errors();
+            $erreur = "Erreur de chargement du fichier XML:";
+            foreach ($libxmlErrors as $libxmlError) {
+                $erreur.= "<br />" . $libxmlError->message;
+            }
+            echo $erreur;
         }
+    } catch(\PDOException $e) {
+        echo($e->getMessage());
+    } catch(\Exception $e) {
+        echo($e->getMessage());
+    }
 
         // Suppression du fichier XML
-        unlink($uploaddir . $basename);
-    }
+    unlink($uploaddir . $basename);
+}
 
     /**
      * @pattern /{_ADMIN_DIR_}/tutoriel/import
@@ -370,16 +457,55 @@ class TutorielController extends \Tiny\BaseController {
     public function recupFromXMIAction() {
 
         // Récupération des fonctionnalités sans tutoriel
-        $results = $this->pdo->query('SELECT * FROM Fonctionnalite WHERE NumTutoriel IS NULL')->fetchAll();
+        $results = $this->pdo->query('SELECT * FROM Module')->fetchAll();
 
-        $res = array();
+        $modules = array();
         foreach ($results as $result) {
-            $res[] = $result;
+            $modules[] = $result;
         }
+
+        $a = '';
+
+        foreach ($modules as $module) {
+
+        // Récupération des fonctionnalités sans tutoriel
+            $results = $this->pdo->query('SELECT * FROM Fonctionnalite WHERE NumFonctionnalite IN (SELECT NumFonctionnalite FROM AssoModuleFonctionnalite WHERE NumModule = ' . $module['NumModule'] . ')')->fetchAll();
+
+            $foncts = array();
+            foreach ($results as $result) {
+                $foncts[] = $result;
+            }
+            $a .= '<optgroup label="' . $module['Nom'] . '">';
+
+            foreach ($foncts as $fonct) {
+                $a .= '<option id="' . $fonct['NumFonctionnalite'] . '">' . $fonct['Nom'] . '</option>';
+            }
+            $a .= '</optgroup>';
+        }
+
+
+
+
+
+        /*
+        '<optgroup label="Groupe 1">
+        <option>Option 1.1</option>
+        </optgroup> 
+        <optgroup label="Groupe 2">
+        <option>Option 2.1</option>
+        <option>Option 2.2</option>
+        </optgroup>
+        <optgroup label="Groupe 3" disabled>
+        <option>Option 3.1</option>
+        <option>Option 3.2</option>
+        <option>Option 3.3</option>
+        </optgroup>'*/
+
+
 
         // Affichage template
         $this->smarty->assign('page', 'Ajout d\'un tutoriel');
-        $this->smarty->assign('fonctionnalites', $res);
+        $this->smarty->assign('html', $a);
         return $this->smarty->fetch('ajout.tpl');
 
     }
@@ -418,4 +544,38 @@ class TutorielController extends \Tiny\BaseController {
         return json_encode($res);
     }
 
+    /**
+     * @pattern {_ADMIN_DIR_}/getSuivant
+     * @return string
+     */
+
+    public function getSuivantAction() {
+
+        if (isset($_POST['numId']) && $_POST['numTuto']){
+            $numEtape = $_POST['numId'];
+            $numTutoriel = $_POST['numTuto'];
+        }
+
+        $results = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
+                . $numTutoriel . " AND TypeCible = 'Choix')")->fetchALL();
+
+        $choix = array();
+        foreach ($results as $result) {
+            $choix[] = $result;
+        }
+
+        var_dump($choix);
+
+
+        /*
+        $results = $this->pdo->query('SELECT * FROM Membre WHERE NumMembre = ' . $_SESSION)->fetchAll();
+
+        $res = array();
+        foreach ($results as $result) {
+            $res[] = $result;
+        }
+        $this->smarty->assign('infos', $infos);*/
+
+
+    }
 }

@@ -9,8 +9,7 @@
 					<li class="list-group-item">
 						<label>{$projet['Nom']}</label>
 						<div class="material-switch pull-right">
-							<button class="glyphicon glyphicon-pencil"></button>
-							<button class="glyphicon glyphicon-remove"></button>
+							<button id="{$projet['NumProjet']}" class="glyphicon glyphicon-pencil" onclick="modifierProjet(this.id)"></button>
 						</div>
 					</li>
 					{/foreach}
@@ -21,4 +20,35 @@
 			</div>
 		</div>
 	</div>
+	<div id="myModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Modification</h4>
+            </div>
+            <div class="modal-body">
+                <p>Saisissez le nouveau libellé du projet :</p>
+                <input type="text" class="form-control" placeholder="Libellé" maxlength="64">
+                <p class="text-warning"><small>64 caractères max.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary">Confirmer</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
+{literal}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+
+	function modifierProjet(id) {
+		$("#myModal").modal('show');
+	}
+
+</script>
+{/literal}

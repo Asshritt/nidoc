@@ -5,27 +5,45 @@
 			<div class="row">
 				<div class="col-lg-6">
 					<ul class="list-group">
-						<li class="list-group-item">
-							Module 1
-							<div class="material-switch pull-right">
-								<input id="1" name="someSwitchOption001" type="checkbox"/>
-								<label for="1" class="label-default"></label>
-							</div>
-						</li>
-						<li class="list-group-item">
-							Module 2
-							<div class="material-switch pull-right">
-								<input id="2" name="someSwitchOption001" type="checkbox" checked/>
-								<label for="2" class="label-default"></label>
-							</div>
-						</li>
-						<li class="list-group-item">
-							Module 3
-							<div class="material-switch pull-right">
-								<input id="3" name="someSwitchOption001" type="checkbox"/>
-								<label for="3" class="label-default"></label>
-							</div>
-						</li>
+						<div class="panel panel-default">
+							<!-- Default panel contents -->
+							<div class="panel-heading">Affecter les modules :</div>
+
+							<!-- Table -->
+							<table class="table">
+								<thead>
+									<tr>
+										<!-- Noms de modules -->
+										<th scope="col"></th>
+										<th scope="col">First</th>
+										<th scope="col">Last</th>
+										<th scope="col">Handle</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<!-- Noms de projets -->
+										<th scope="row">1</th>
+										<!-- Checkboxes -->
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+									</tr>
+									<tr>
+										<th scope="row">2</th>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+									</tr>
+									<tr>
+										<th scope="row">3</th>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+										<td><input type="checkbox" class="form-check-input" id="exampleCheck1"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</ul>
 				</div>
 			</div>

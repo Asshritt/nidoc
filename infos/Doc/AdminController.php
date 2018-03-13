@@ -19,16 +19,6 @@ class AdminController extends \Tiny\BaseController {
     }
 
     /**
-     * @pattern /{_ADMIN_DIR_}/membres
-     * @return string
-     */
-
-    public function adminMembresAction() {
-        $this->smarty->assign('page', 'Gestion des membres');
-        return $this->smarty->fetch('todo.tpl');
-    }
-
-    /**
      * @pattern /{_ADMIN_DIR_}/projets
      * @return string
      */

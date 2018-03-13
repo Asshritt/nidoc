@@ -11,9 +11,6 @@
 					Menu
 				</li>
 				<li>
-					<a href="{$url}{$adminDir}/membres">Membres</a>
-				</li>
-				<li>
 					<a href="{$url}{$adminDir}/projets">Projets</a>
 				</li>
 				<li>

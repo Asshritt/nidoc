@@ -6,13 +6,7 @@
 				<form id ="importForm" action="{WEB_ROOT}uploadXML" method="post" enctype="multipart/form-data">
 					<div class="form-group" id="fonctionnalites">
 						<select class="form-control" id="selectFonct" name="selectFonct" required>
-							{if $fonctionnalites|@count gt 0}
-							{foreach from=$fonctionnalites item=fonct}
-							<option id="{$fonct['NumFonctionnalite']}" name="test">{$fonct['Nom']}</option>
-							{/foreach}
-							{else}
-							<option disabled>Pas de fonctionnalités disponibles</option>
-							{/if}
+							{$html}
 						</select>
 						<input type="text" id="inputTitre" name="inputTitre" placeholder="Titre du tutoriel" class="form-control" aria-describedby="basic-addon1" required>
 						<input type="text" id="inputDescription" name="inputDescription" placeholder="Description du tutoriel" class="form-control" aria-describedby="basic-addon1" required>
@@ -27,14 +21,14 @@
 </body>
 {literal}
 <script
-  src="https://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
+src="https://code.jquery.com/jquery-3.3.1.min.js"
+integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+crossorigin="anonymous"></script>
 
 <script type="text/javascript">
 
-	 $(function() {
-	
+	$(function() {
+
 		$('#importForm').submit(function(e){
 			e.preventDefault();
 
@@ -51,7 +45,6 @@
 			datas.append('inputDescription', inputDescription);
 			datas.append('uploadXML', uploadXML);
 
-
 			$.ajax({
 				type: "POST",
 				data:  datas,
@@ -62,6 +55,9 @@
 
 			.done(function(data){
 				$("#msgResultat").html(data);
+				if (data == "Le tutoriel à bien été enregistré.") {
+					$('#btnValider').attr('disabled', 'disabled');
+				}
 			})
 
 			.fail(function(data){
@@ -70,7 +66,7 @@
 
 		});
 
-	 });
+	});
 
 
 
