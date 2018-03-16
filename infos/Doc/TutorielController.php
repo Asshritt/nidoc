@@ -151,7 +151,7 @@ class TutorielController extends \Tiny\BaseController {
             if ($typeCible == "Etape") {
                 //echo ('etape ' . $etape['Description'] . '<br>');
                 $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
-                 . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
+                   . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
             } else if ($typeCible == "Choix"){
                 //echo ('choix ' . $etape['Description']);
                 //var_dump($etape);
@@ -475,33 +475,18 @@ class TutorielController extends \Tiny\BaseController {
             foreach ($results as $result) {
                 $foncts[] = $result;
             }
+            // Création libellé module
             $a .= '<optgroup label="' . $module['Nom'] . '">';
 
+            // Création du dropdown contenant les fonctionnalités
             foreach ($foncts as $fonct) {
-                $a .= '<option id="' . $fonct['NumFonctionnalite'] . '">' . $fonct['Nom'] . '</option>';
+                $tuto = $this->pdo->query('SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $fonct['NumFonctionnalite'])->fetch();
+                $a .= '<option id="' . $fonct['NumFonctionnalite'] . '"';
+                $a .= ($tuto['NumTutoriel'] != null) ? ' disabled' : "" ;
+                $a .= '>' . $fonct['Nom'] . '</option>';
             }
             $a .= '</optgroup>';
         }
-
-
-
-
-
-        /*
-        '<optgroup label="Groupe 1">
-        <option>Option 1.1</option>
-        </optgroup> 
-        <optgroup label="Groupe 2">
-        <option>Option 2.1</option>
-        <option>Option 2.2</option>
-        </optgroup>
-        <optgroup label="Groupe 3" disabled>
-        <option>Option 3.1</option>
-        <option>Option 3.2</option>
-        <option>Option 3.3</option>
-        </optgroup>'*/
-
-
 
         // Affichage template
         $this->smarty->assign('page', 'Ajout d\'un tutoriel');
@@ -557,7 +542,7 @@ class TutorielController extends \Tiny\BaseController {
         }
 
         $results = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
-                . $numTutoriel . " AND TypeCible = 'Choix')")->fetchALL();
+            . $numTutoriel . " AND TypeCible = 'Choix')")->fetchALL();
 
         $choix = array();
         foreach ($results as $result) {
@@ -578,4 +563,7 @@ class TutorielController extends \Tiny\BaseController {
 
 
     }
+
+
+    
 }

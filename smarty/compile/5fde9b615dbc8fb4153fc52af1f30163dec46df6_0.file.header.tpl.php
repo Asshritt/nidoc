@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.30, created on 2017-12-06 17:10:40
+/* Smarty version 3.1.30, created on 2018-03-16 10:06:34
   from "C:\Users\Asshritt\Documents\__Projets\IUP_MIAGE\ProjetAnnee\nidoc\template\header.tpl" */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.30',
-  'unifunc' => 'content_5a28249032a4b9_53107695',
+  'unifunc' => 'content_5aab972a7f11d8_75002142',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '5fde9b615dbc8fb4153fc52af1f30163dec46df6' => 
     array (
       0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP_MIAGE\\ProjetAnnee\\nidoc\\template\\header.tpl',
-      1 => 1512468731,
+      1 => 1521194774,
       2 => 'file',
     ),
   ),
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_5a28249032a4b9_53107695 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5aab972a7f11d8_75002142 (Smarty_Internal_Template $_smarty_tpl) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -30,8 +30,6 @@ function content_5a28249032a4b9_53107695 (Smarty_Internal_Template $_smarty_tpl)
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title><?php echo $_smarty_tpl->tpl_vars['page']->value;?>
 </title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
 	<!-- JQUERY -->
 	<?php echo '<script'; ?>
@@ -55,7 +53,7 @@ function content_5a28249032a4b9_53107695 (Smarty_Internal_Template $_smarty_tpl)
 </head>
 
 
-<nav class="navbar navbar-default">
+<nav class="navbar navbar-default" style="margin-bottom: 0px;">
 	<div class="container-fluid">
 		<!-- Brand and toggle get grouped for better mobile display -->
 		<div class="navbar-header">

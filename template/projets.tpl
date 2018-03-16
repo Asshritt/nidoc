@@ -9,7 +9,7 @@
 					<li class="list-group-item">
 						<label>{$projet['Nom']}</label>
 						<div class="material-switch pull-right">
-							<button id="{$projet['NumProjet']}" class="glyphicon glyphicon-pencil" onclick="modifierProjet(this.id)"></button>
+							<button id="{$projet['NumProjet']}" class="glyphicon glyphicon-pencil" onclick="modifierProjet(this.id)" ></button>
 						</div>
 					</li>
 					{/foreach}
@@ -20,25 +20,28 @@
 			</div>
 		</div>
 	</div>
+	<input type="text" hidden id="WEB_ROOT" value="{$WEB_ROOT}">
+	<input type="text" hidden id="ADMIN_DIR" value="{$ADMIN_DIR}">
 	<div id="myModal" class="modal fade">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Modification</h4>
-            </div>
-            <div class="modal-body">
-                <p>Saisissez le nouveau libellé du projet :</p>
-                <input type="text" class="form-control" placeholder="Libellé" maxlength="64">
-                <p class="text-warning"><small>64 caractères max.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary">Confirmer</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-            </div>
-        </div>
-    </div>
-</div>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Modification</h4>
+				</div>
+				<div class="modal-body">
+					<p>Saisissez le nouveau libellé du projet :</p>
+					<input type="text" id="nouveauLibelle" class="form-control" placeholder="Libellé" maxlength="64">
+					<p class="text-warning"><small>64 caractères max.</small></p>
+					<input type="text" name="bookId" hidden id="projetId" value=""/>
+				</div>
+				<div class="modal-footer">
+					<button type="button" id="btnValider" class="btn btn-primary">Confirmer</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 {literal}
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -47,8 +50,41 @@
 <script type="text/javascript">
 
 	function modifierProjet(id) {
+		var projetId = id;
+		$(".modal-body #projetId").val( projetId ); 
 		$("#myModal").modal('show');
 	}
+
+	$( "#btnValider" ).click(function() {
+
+		var idProjet = $(".modal-body #projetId").val()
+		var libelleProjet = $("#nouveauLibelle").val()
+
+		if (/\S/.test(libelleProjet)) {
+			var datas = new FormData();
+			datas.append('idProjet', idProjet);
+			datas.append('libelleProjet', libelleProjet);
+
+			$.ajax({
+				type: "POST",
+				data:  datas,
+				contentType: false,
+				processData: false, 
+				url: $("#WEB_ROOT").val() + $("#ADMIN_DIR").val() + "/updateLibelleProjet"
+			})
+
+			.done(function(data){
+				alert(data + '\nRafraîchir pour voir les changements.');
+				$('#myModal').modal('hide');
+			})
+
+			.fail(function(data){
+				console.log(data);
+			});
+		} else {
+			alert("Libelle non valide.")
+		}
+	});
 
 </script>
 {/literal}

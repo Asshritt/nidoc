@@ -19,12 +19,6 @@
 				<li>
 					<a href="{$url}{$adminDir}/fonctionnalites">Fonctionnalites</a>
 				</li>
-				<li>
-					<a href="{$url}{$adminDir}/tutoriels">Tutoriels</a>
-				</li>
-				<li>
-					<a href="{$url}{$adminDir}/medias">Medias</a>
-				</li>
 			</ul>
 		</div>
 		<!-- /#sidebar-wrapper -->
