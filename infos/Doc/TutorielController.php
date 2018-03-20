@@ -176,6 +176,10 @@ class TutorielController extends \Tiny\BaseController {
         $this->smarty->assign('page', 'Tutoriel');
         $this->smarty->assign('etapes', $entities);
         $this->smarty->assign('tutoriel', $numTutoriel);
+
+        // Ajax
+        $this->smarty->assign('WEB_ROOT', WEB_ROOT);
+        $this->smarty->assign('ADMIN_DIR', _ADMIN_DIR_);
         return $this->smarty->fetch('tutoriel.tpl');
     }
 
@@ -464,7 +468,7 @@ class TutorielController extends \Tiny\BaseController {
             $modules[] = $result;
         }
 
-        $a = '';
+        $dropdown = '';
 
         foreach ($modules as $module) {
 
@@ -476,23 +480,22 @@ class TutorielController extends \Tiny\BaseController {
                 $foncts[] = $result;
             }
             // Création libellé module
-            $a .= '<optgroup label="' . $module['Nom'] . '">';
+            $dropdown .= '<optgroup label="' . $module['Nom'] . '">';
 
             // Création du dropdown contenant les fonctionnalités
             foreach ($foncts as $fonct) {
                 $tuto = $this->pdo->query('SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $fonct['NumFonctionnalite'])->fetch();
-                $a .= '<option id="' . $fonct['NumFonctionnalite'] . '"';
-                $a .= ($tuto['NumTutoriel'] != null) ? ' disabled' : "" ;
-                $a .= '>' . $fonct['Nom'] . '</option>';
+                $dropdown .= '<option id="' . $fonct['NumFonctionnalite'] . '"';
+                $dropdown .= ($tuto['NumTutoriel'] != null) ? ' disabled' : "" ;
+                $dropdown .= '>' . $fonct['Nom'] . '</option>';
             }
-            $a .= '</optgroup>';
+            $dropdown .= '</optgroup>';
         }
 
         // Affichage template
         $this->smarty->assign('page', 'Ajout d\'un tutoriel');
-        $this->smarty->assign('html', $a);
+        $this->smarty->assign('html', $dropdown);
         return $this->smarty->fetch('ajout.tpl');
-
     }
 
     /**
@@ -530,38 +533,102 @@ class TutorielController extends \Tiny\BaseController {
     }
 
     /**
-     * @pattern {_ADMIN_DIR_}/getSuivant
+     * @pattern /{_ADMIN_DIR_}/getSuivant
      * @return string
      */
 
     public function getSuivantAction() {
 
-        if (isset($_POST['numId']) && $_POST['numTuto']){
+        header('Content-Type: application/json');
+
+
+        if (isset($_POST['numId']) && $_POST['numTuto'] && $_POST['estUnChoix']){
             $numEtape = $_POST['numId'];
             $numTutoriel = $_POST['numTuto'];
-        }
-
-        $results = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
-            . $numTutoriel . " AND TypeCible = 'Choix')")->fetchALL();
-
-        $choix = array();
-        foreach ($results as $result) {
-            $choix[] = $result;
-        }
-
-        var_dump($choix);
+            $estUnChoix = $_POST['estUnChoix'];
 
 
-        /*
-        $results = $this->pdo->query('SELECT * FROM Membre WHERE NumMembre = ' . $_SESSION)->fetchAll();
-
-        $res = array();
-        foreach ($results as $result) {
-            $res[] = $result;
-        }
-        $this->smarty->assign('infos', $infos);*/
+            // probleme lié au paramètre envoyé en ajax qi est un string au lieu d'un bool. La conversion string vers bool ne marche pas.
+            // le code ci-dessous résout le problème.            
+            if ($estUnChoix == "true")
+                $boolEstUnChoix = true;
+            else
+                $boolEstUnChoix = false;
 
 
+            // si c'est un Choix, on affiche uniquement les étapes correspondantes
+            if ($boolEstUnChoix == true){
+                $type = 'Choix';
+
+                $queryChoix = "SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
+                . $numTutoriel . " AND TypeSource LIKE \"" . $type . "\")";
+
+                $results = $this->pdo->query($queryChoix)->fetchALL();
+
+
+                $choix = array();
+                
+                foreach ($results as $result) {
+                    $choix[] = $result;
+                }
+
+                echo(json_encode($choix));
+
+            }
+
+            // si c'est une Etape choisie, on affiche toutes les étapes jusqu'à avoir un prochain choix
+            else {
+                if (!isset($_POST['numFonctionnalite']))
+                    throw new \Exception("Le paramètre numFonctionnalite n'a pas ete envoye par HTTP POST");
+
+                $numFonctionnalite = $_POST['numFonctionnalite'];
+                //pour s'arreter d'itérer plus tard
+                $fin = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $numFonctionnalite . ") AND Etape.NumEtape NOT IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
+
+
+                //$type = 'Etape';
+
+                //$queryEtapes = "SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " . $numTutoriel . " AND TypeSource LIKE \"" . $type . "\")";
+
+                //utilisation d'un bout de la fonction située en haut du fichier : $this->fonctionnaliteAction($id)
+
+
+                $entities = array();
+                $suivant = null;
+                do {
+                                   
+                    
+                    if ($suivant) //si suivant n'est pas null, on change de numEtape
+                        $numEtape = $suivant['NumEtape'];
+
+                    $typeCible = $this->pdo->query("SELECT TypeCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " . $numTutoriel)->fetch()[0];
+
+                    if ($typeCible == "Etape") {
+                
+                        $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
+                                                    . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
+                    } 
+
+                    else if ($typeCible == "Choix"){
+                        $suivant = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
+                                                        . $numTutoriel . " AND TypeCible = 'Choix')")->fetch();
+                    }
+
+                   /* $etape = $suivant;*/
+                    if ($suivant != $fin) {
+                        $entities[] = $suivant;
+                    }
+
+                } while ($typeCible == "Etape"); 
+
+                echo(json_encode($entities));
+
+            }//else (c'est une étape)
+
+        } // if $_POST valide
+
+        else
+            throw new \Exception ("Les données attendues n'ont pas été transmises par HTTP POST");
     }
 
 
