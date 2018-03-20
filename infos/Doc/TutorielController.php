@@ -73,38 +73,42 @@ class TutorielController extends \Tiny\BaseController {
 
     public function fonctionnaliteAction($id) {
 
-        // Récupération des étapes de la base de données
-        $results = $this->pdo->query('SELECT * FROM Etape WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+        $tuto = $this->pdo->query('SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id)->fetch()[0];
 
-        $etapes = array();
-        foreach ($results as $result) {
-            $etapes[] = $result;
-        }
+        if($tuto != null) {
 
         // Récupération des étapes de la base de données
-        $results = $this->pdo->query('SELECT * FROM Choix WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+            $results = $this->pdo->query('SELECT * FROM Etape WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
 
-        $choix = array();
-        foreach ($results as $result) {
-            $choix[] = $result;
-        }
+            $etapes = array();
+            foreach ($results as $result) {
+                $etapes[] = $result;
+            }
 
         // Récupération des étapes de la base de données
-        $results = $this->pdo->query('SELECT * FROM Lien WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+            $results = $this->pdo->query('SELECT * FROM Choix WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
 
-        $liens = array();
-        foreach ($results as $result) {
-            $liens[] = $result;
-        }
+            $choix = array();
+            foreach ($results as $result) {
+                $choix[] = $result;
+            }
+
+        // Récupération des étapes de la base de données
+            $results = $this->pdo->query('SELECT * FROM Lien WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
+
+            $liens = array();
+            foreach ($results as $result) {
+                $liens[] = $result;
+            }
 
         //var_dump($choix);
         //var_dump($etapes);
         //var_dump($liens);
 
-        $entities = array();
+            $entities = array();
 
         // Chercher le début :
-        
+
         /*SELECT * FROM Etape
         WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = 1)
         AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape')
@@ -151,7 +155,7 @@ class TutorielController extends \Tiny\BaseController {
             if ($typeCible == "Etape") {
                 //echo ('etape ' . $etape['Description'] . '<br>');
                 $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
-                   . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
+                 . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
             } else if ($typeCible == "Choix"){
                 //echo ('choix ' . $etape['Description']);
                 //var_dump($etape);
@@ -172,7 +176,6 @@ class TutorielController extends \Tiny\BaseController {
         // Parcours de mon arbre
         // A chaque sortie d'entite, la stocker dans le tableau $entities
 
-        
         $this->smarty->assign('page', 'Tutoriel');
         $this->smarty->assign('etapes', $entities);
         $this->smarty->assign('tutoriel', $numTutoriel);
@@ -181,7 +184,13 @@ class TutorielController extends \Tiny\BaseController {
         $this->smarty->assign('WEB_ROOT', WEB_ROOT);
         $this->smarty->assign('ADMIN_DIR', _ADMIN_DIR_);
         return $this->smarty->fetch('tutoriel.tpl');
+
+
+    } else {
+        $this->smarty->assign('page', 'Tutoriel');
+        return $this->smarty->fetch('notuto.tpl');
     }
+}
 
     /**
      * @pattern /uploadXML
@@ -596,25 +605,25 @@ class TutorielController extends \Tiny\BaseController {
                 $entities = array();
                 $suivant = null;
                 do {
-                                   
-                    
+
+
                     if ($suivant) //si suivant n'est pas null, on change de numEtape
-                        $numEtape = $suivant['NumEtape'];
+                    $numEtape = $suivant['NumEtape'];
 
                     $typeCible = $this->pdo->query("SELECT TypeCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " . $numTutoriel)->fetch()[0];
 
                     if ($typeCible == "Etape") {
-                
+
                         $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
-                                                    . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
+                            . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
                     } 
 
                     else if ($typeCible == "Choix"){
                         $suivant = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
-                                                        . $numTutoriel . " AND TypeCible = 'Choix')")->fetch();
+                            . $numTutoriel . " AND TypeCible = 'Choix')")->fetch();
                     }
 
-                   /* $etape = $suivant;*/
+                    /* $etape = $suivant;*/
                     if ($suivant != $fin) {
                         $entities[] = $suivant;
                     }
