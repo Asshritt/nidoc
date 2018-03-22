@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.30, created on 2018-03-16 12:02:00
+/* Smarty version 3.1.30, created on 2018-03-21 16:47:39
   from "C:\Users\Asshritt\Documents\__Projets\IUP_MIAGE\ProjetAnnee\nidoc\template\modules.tpl" */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.30',
-  'unifunc' => 'content_5aabb2380c55e2_31132708',
+  'unifunc' => 'content_5ab28cab6ea0b5_70752958',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '079c5484ac96ba54e3df139b61ccc3fa707966be' => 
     array (
       0 => 'C:\\Users\\Asshritt\\Documents\\__Projets\\IUP_MIAGE\\ProjetAnnee\\nidoc\\template\\modules.tpl',
-      1 => 1521201719,
+      1 => 1521650725,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:sidebar.tpl' => 1,
   ),
 ),false)) {
-function content_5aabb2380c55e2_31132708 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5ab28cab6ea0b5_70752958 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_subTemplateRender("file:sidebar.tpl", $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
 
@@ -31,7 +31,6 @@ $_smarty_tpl->_subTemplateRender("file:sidebar.tpl", $_smarty_tpl->cache_id, $_s
 			<div class="row">
 				<ul class="list-group">
 					<div class="panel panel-default">
-						<!-- Default panel contents -->
 						<div class="panel-heading">Affecter les modules :</div>
 
 						<!-- Table -->
@@ -60,6 +59,7 @@ $_smarty_tpl->_subTemplateRender("file:sidebar.tpl", $_smarty_tpl->cache_id, $_s
 <?php echo '<script'; ?>
  type="text/javascript">
 
+	// Lorsque l'on clique sur le "Valider"
 	$( "#btnValider" ).click(function() {
 		var check = new Object();
 		var i=0;
@@ -84,12 +84,9 @@ $_smarty_tpl->_subTemplateRender("file:sidebar.tpl", $_smarty_tpl->cache_id, $_s
 			data: "check=" + check,
 			url: $("#WEB_ROOT").val() + $("#ADMIN_DIR").val() + "/updateModuleProjet"
 		})
-
 		.done(function(data){
-			//console.log(data);
 			alert(data);
 		})
-
 		.fail(function(data){
 		});
 

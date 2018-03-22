@@ -6,24 +6,21 @@
 			<div class="col-md-4">
 				<div class="list-group" id="etapes">
 					{if $etapes|@count gt 0}
-						{foreach from=$etapes item=etape}
-							{if 'NumEtape'|array_key_exists:$etape}
-								<button id="{$etape['NumEtape']}" name ="{$tutoriel}" type="button" class="list-group-item">{$etape['Description']}</button>
-							{else}
-								<button id="choix-{$etape['NumChoix']}" name ="{$tutoriel}" type="button" class="list-group-item">{$etape['Libelle']}</button>
-							{/if}
-						{/foreach}
+					{foreach from=$etapes item=etape}
+					{if 'NumEtape'|array_key_exists:$etape}
+					<button id="{$etape['NumEtape']}" name ="{$tutoriel}" type="button" class="list-group-item">{$etape['Description']}</button>
 					{else}
-						<button id="" type="button" class="list-group-item"><i>Pas d'étapes pour ce tutoriel</i></button>
+					<button id="choix-{$etape['NumChoix']}" name ="{$tutoriel}" type="button" class="list-group-item">{$etape['Libelle']}</button>
 					{/if}
-					<input type="text" hidden id="WEB_ROOT" value="{$WEB_ROOT}" /> 
-					<input type="text" hidden id="ADMIN_DIR" value="{$ADMIN_DIR}" /> 
+					{/foreach}
+					{else}
+					<button id="" type="button" class="list-group-item"><i>Pas d'étapes pour ce tutoriel</i></button>
+					{/if}
 					<p id="test"> </p>
 				</div>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-8">
 				<div class="list-group" id="medias">
-					<button type="button" class="list-group-item" disabled="true"><i>Afficher les médias </i></button>
 				</div>
 			</div>
 		</div>
@@ -40,7 +37,12 @@ crossorigin="anonymous"></script>
 
 	$(function() {
 
-		var url = $("#WEB_ROOT").val() + $("#ADMIN_DIR").val() + '/getSuivant';
+		{/literal}
+		var WEB_ROOT = '{$WEB_ROOT}';
+		var ADMIN_DIR = '{$ADMIN_DIR}'
+		{literal}
+
+		var url = WEB_ROOT + ADMIN_DIR + '/getSuivant';
 		var pathname = window.location.pathname; // Returns path only
 		var pos_dernier_slash = pathname.lastIndexOf("/");
 		var numFonctionnalite = pathname.substring(pos_dernier_slash + 1, pathname.length);
@@ -51,19 +53,23 @@ crossorigin="anonymous"></script>
 		//CLIC SUR UN CHOIX
 		$(document).on('click', "button[id^='choix-']", function(e){
 
+
 			var objet_courant = $(this);
 			var numTuto = $(this)[0].name;
 			var numChoix = $(this)[0].id;
 			var numChoixFormate = numChoix.substring(6, numChoix.length);
+
 
 			$.ajax({
 				type: "POST",
 				data:  {'numId' : numChoixFormate, 'numTuto' : numTuto, 'estUnChoix' : true}, 
 				dataType: "JSON",
 				url: url
+
 			})
 			.done(function(data){
-				//$("#test").html(data);
+				// Suppression des eléments suivants 
+				objet_courant.nextAll().remove();
 
 				$.each(data, function(index, value){
 					propositions_choix[index] = value['NumEtape']; 
@@ -72,12 +78,12 @@ crossorigin="anonymous"></script>
 						$libelleChoix = "Non"
 					else
 						$libelleChoix = "Oui"
+					
 					$("#etapes").append("<button id=\"etape-" + value['NumEtape'] + "\" name = " + value['NumTutoriel'] + " type=\"button\" class=\"list-group-item\"> <strong> " + $libelleChoix + " - </strong>" + value[1] + " </button>");
 
 				});
-
-				objet_courant.prop("disabled", true);
 			})
+
 			.fail(function(data){
 				$("#test").html(data.responseText);
 			});
@@ -89,6 +95,7 @@ crossorigin="anonymous"></script>
 			var numTuto = $(this)[0].name;
 			var numChoix = $(this)[0].id;	
 			var numChoixFormate = numChoix.substring(6, numChoix.length);
+
 
 			//suppression de l'étape qui n'est pas choisie.
 			cacherEtapeNonChoisie(numChoixFormate);
@@ -103,21 +110,27 @@ crossorigin="anonymous"></script>
 				url: url
 
 			})
+			
 			.done(function(data){
 				//$("#test").html(data);
-
-
+				var un_choix = false
 				$.each(data, function(index, value){
 
 					if (value['NumEtape'] !== undefined)
 						$("#etapes").append("<button id= " + value['NumEtape'] + " name = " + value['NumTutoriel'] + " type=\"button\" class=\"list-group-item\"> " + value[1] + " </button>");
 
 					else
+					{
+						un_choix = true;
 						$("#etapes").append("<button id=\"choix-" + value['NumChoix'] + "\" name = " + value['NumTutoriel'] + " type=\"button\" class=\"list-group-item\"> " + value[1] + " </button>");
-
+					}
 				});
-
+				if (un_choix == false)
+				{
+					$("#etapes").append("<button type=\"button\" class=\"list-group-item\"> Fin du tutoriel.</button>");
+				}
 			})
+
 			.fail(function(data){
 				$("#test").html(data.responseText);
 			});
@@ -139,12 +152,20 @@ crossorigin="anonymous"></script>
 
 				if (value != numChoixFormate)
 					$('#etape-' + value).hide();
-
 			});
 		}
 
+		$('button.list-group-item').click(function() {
+			var id = this.id;
+			$.ajax({
+				type: "POST",
+				data:  'id=' + id,
+				url: WEB_ROOT + '/getMedia'
+			}).done(function(data){
+				$('#medias').html(data);
+				console.log(data);
+			})
+		})
 	}); // ajax
-
-
 </script>
 {/literal}

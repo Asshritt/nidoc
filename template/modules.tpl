@@ -5,7 +5,6 @@
 			<div class="row">
 				<ul class="list-group">
 					<div class="panel panel-default">
-						<!-- Default panel contents -->
 						<div class="panel-heading">Affecter les modules :</div>
 
 						<!-- Table -->
@@ -18,9 +17,6 @@
 		</div>
 		<button type="button" id="btnValider" class="btn btn-primary">Confirmer</button>
 	</div>
-	
-	<input type="text" hidden id="WEB_ROOT" value="{$WEB_ROOT}">
-	<input type="text" hidden id="ADMIN_DIR" value="{$ADMIN_DIR}">
 </body>
 <p id="test"></p>
 
@@ -28,7 +24,14 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript">
 
+	// Lorsque l'on clique sur le "Valider"
 	$( "#btnValider" ).click(function() {
+
+		{/literal}
+		var WEB_ROOT = '{$WEB_ROOT}';
+		var ADMIN_DIR = '{$ADMIN_DIR}'
+		{literal}
+
 		var check = new Object();
 		var i=0;
 		// Parcours de chaque case du tableau
@@ -50,14 +53,11 @@
 		$.ajax({
 			type: "POST",
 			data: "check=" + check,
-			url: $("#WEB_ROOT").val() + $("#ADMIN_DIR").val() + "/updateModuleProjet"
+			url: WEB_ROOT + ADMIN_DIR + "/updateModuleProjet"
 		})
-
 		.done(function(data){
-			//console.log(data);
 			alert(data);
 		})
-
 		.fail(function(data){
 		});
 

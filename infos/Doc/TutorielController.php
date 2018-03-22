@@ -73,19 +73,20 @@ class TutorielController extends \Tiny\BaseController {
 
     public function fonctionnaliteAction($id) {
 
+        // Récupération id Tutoriel
         $tuto = $this->pdo->query('SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id)->fetch()[0];
 
         if($tuto != null) {
 
-        // Récupération des étapes de la base de données
+            // Récupération des étapes de la base de données
             $results = $this->pdo->query('SELECT * FROM Etape WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
-
+            
             $etapes = array();
             foreach ($results as $result) {
                 $etapes[] = $result;
             }
 
-        // Récupération des étapes de la base de données
+            // Récupération des étapes de la base de données
             $results = $this->pdo->query('SELECT * FROM Choix WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
 
             $choix = array();
@@ -93,7 +94,7 @@ class TutorielController extends \Tiny\BaseController {
                 $choix[] = $result;
             }
 
-        // Récupération des étapes de la base de données
+            // Récupération des étapes de la base de données
             $results = $this->pdo->query('SELECT * FROM Lien WHERE NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = ' . $id . ')')->fetchAll();
 
             $liens = array();
@@ -101,96 +102,69 @@ class TutorielController extends \Tiny\BaseController {
                 $liens[] = $result;
             }
 
-        //var_dump($choix);
-        //var_dump($etapes);
-        //var_dump($liens);
-
             $entities = array();
 
-        // Chercher le début :
+            // Chercher le début
+            $debut = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $id . ") AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape NOT IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
 
-        /*SELECT * FROM Etape
-        WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = 1)
-        AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape')
-        AND Etape.NumEtape NOT IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')*/
+            // Chercher la fin
+            $fin = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $id . ") AND Etape.NumEtape NOT IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
 
-        // Chercher la fin :
+            $numTutoriel = $debut['NumTutoriel'];
+            $etape = $debut;
 
-        /*SELECT * FROM Etape
-        WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = 1)
-        AND Etape.NumEtape NOT IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape')
-        AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')*/
+            do {
+                if (array_key_exists('NumEtape', $etape)) {
+                    $numEtape = $etape['NumEtape'];
+                } else if (array_key_exists('NumChoix', $etape)){
+                    $numEtape = $etape['NumChoix'];
+                }
 
-
-        $debut = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $id . ") AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape NOT IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
-
-
-        $fin = $this->pdo->query("SELECT * FROM Etape WHERE Etape.NumTutoriel = (SELECT NumTutoriel FROM Fonctionnalite WHERE NumFonctionnalite = " . $id . ") AND Etape.NumEtape NOT IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetch();
-
-        //var_dump($debut);
-
-        $numTutoriel = $debut['NumTutoriel'];
-
-        $etape = $debut;
-
-        do {
-            if (array_key_exists('NumEtape', $etape)) {
-                $numEtape = $etape['NumEtape'];
-            } else if (array_key_exists('NumChoix', $etape)){
-                $numEtape = $etape['NumChoix'];
-            }
-            /* else if (array_key_exists('NumEtape', $etape[0])){
-                $numEtape = $etape[0]['NumEtape'];
-            } else if (array_key_exists('NumChoix', $etape[0])){
-                $numEtape = $etape[0]['NumChoix'];
-            }*/
-
-            $typeCible = $this->pdo->query("SELECT TypeCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " . $debut['NumTutoriel'])->fetch()[0];
+                $typeCible = $this->pdo->query("SELECT TypeCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " . $debut['NumTutoriel'])->fetch()[0];
             //var_dump("type" . $typeCible);
 
             //var_dump($etape);
             //var_dump($numEtape);
             //var_dump($numTutoriel);
 
-            if ($typeCible == "Etape") {
+                if ($typeCible == "Etape") {
                 //echo ('etape ' . $etape['Description'] . '<br>');
-                $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
-                 . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
-            } else if ($typeCible == "Choix"){
-                //echo ('choix ' . $etape['Description']);
-                //var_dump($etape);
-                $suivant = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
-                    . $numTutoriel . " AND TypeCible = 'Choix')")->fetch();
+                    $suivant = $this->pdo->query("SELECT * FROM Etape WHERE NumEtape IN (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = "
+                     . $numTutoriel . " AND TypeCible = 'Etape')")->fetch();
+                } else if ($typeCible == "Choix"){
+                    //echo ('choix ' . $etape['Description']);
+                    //var_dump($etape);
+                    $suivant = $this->pdo->query("SELECT * FROM Choix WHERE NumChoix = (SELECT NumCible FROM Lien WHERE NumSource = " . $numEtape . " AND NumTutoriel = " 
+                        . $numTutoriel . " AND TypeCible = 'Choix')")->fetch();
 
-            }
+                }
 
-            $etape = $suivant;
-            if ($suivant != $fin) {
-                $entities[] = $suivant;
-            }
+                $etape = $suivant;
+                if ($suivant != $fin) {
+                    $entities[] = $suivant;
+                }
 
-        } while ($typeCible == "Etape"); // Jusqu'a ce qu'on trouve la fin
-       // var_dump($entities);
+            } while ($typeCible == "Etape"); // Jusqu'a ce qu'on trouve la fin ou un choix
 
 
         // Parcours de mon arbre
         // A chaque sortie d'entite, la stocker dans le tableau $entities
 
-        $this->smarty->assign('page', 'Tutoriel');
-        $this->smarty->assign('etapes', $entities);
-        $this->smarty->assign('tutoriel', $numTutoriel);
+            $this->smarty->assign('page', 'Tutoriel');
+            $this->smarty->assign('etapes', $entities);
+            $this->smarty->assign('tutoriel', $numTutoriel);
 
         // Ajax
-        $this->smarty->assign('WEB_ROOT', WEB_ROOT);
-        $this->smarty->assign('ADMIN_DIR', _ADMIN_DIR_);
-        return $this->smarty->fetch('tutoriel.tpl');
+            $this->smarty->assign('WEB_ROOT', WEB_ROOT);
+            $this->smarty->assign('ADMIN_DIR', _ADMIN_DIR_);
+            return $this->smarty->fetch('tutoriel.tpl');
 
 
-    } else {
-        $this->smarty->assign('page', 'Tutoriel');
-        return $this->smarty->fetch('notuto.tpl');
+        } else {
+            $this->smarty->assign('page', 'Tutoriel');
+            return $this->smarty->fetch('notuto.tpl');
+        }
     }
-}
 
     /**
      * @pattern /uploadXML
@@ -441,7 +415,7 @@ class TutorielController extends \Tiny\BaseController {
             }
 
             // Validation de la transaction
-            $this->pdo->commit();
+            $this->pdo->rollback();
             echo("Le tutoriel à bien été enregistré.");
         } else {
                 // Exception
@@ -640,6 +614,40 @@ class TutorielController extends \Tiny\BaseController {
             throw new \Exception ("Les données attendues n'ont pas été transmises par HTTP POST");
     }
 
+    /**
+     * @pattern /getMedia
+     * @return string
+     */
 
-    
+    public function getMediaAction() {
+        $numEtape = $_POST['id'];
+
+        $retour = '<button type="button" class="list-group-item" disabled="true"><i>Pas de média à afficher. </i></button>';
+
+        if (filter_var($numEtape, FILTER_VALIDATE_INT)) {
+            $media = $this->pdo->query("SELECT * FROM Media WHERE NumMedia = (SELECT NumMedia FROM AssoMediaEtape WHERE NumEtape = " . $numEtape . ")")->fetch();
+
+            if ($media) {
+                $typeMedia = $media['TypeMedia'];
+                switch ($typeMedia) {
+                    case 1:
+                    $retour = '<iframe width="560" height="315" src="' . $media['LienExterne'] . '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+                    break;
+                    case 2:
+                    $retour = '<a href="' . $media['LienExterne'] . '" target="_blank">Lien externe</a>';
+                    break;
+                    case 3:
+                    $retour = '<img src="' . WEB_ROOT . $media['LienInterne'] . '">';
+                    break;
+                    case 4:
+                    $retour = '<audio controls controlsList="nodownload"><source src="horse.mp3" type="audio/mpeg"></audio>';
+                    break;
+                    case 5:
+                    $retour = '<a>' . $media['Description'] . '</a>';
+                    break;
+                }
+            }
+        }
+        echo($retour);
+    }    
 }

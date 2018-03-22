@@ -174,7 +174,7 @@ class AdminController extends \Tiny\BaseController {
      */
 
     public function updateLibelleProjetAction() {
-
+        // Check si les informations sont passées
         if (isset($_POST['idProjet']) && isset($_POST['libelleProjet'])) {
             $idProjet = $_POST['idProjet'];
             $libelleProjet = $_POST['libelleProjet'];
@@ -184,7 +184,7 @@ class AdminController extends \Tiny\BaseController {
             $stmt->bindParam(':libelle', $libelleProjet);
             $stmt->bindParam(':id', $idProjet);
             $res = $stmt->execute();
-
+            // Retour
             if ($res) {
                 echo("Mise à jour réussie !");
             } else {
@@ -293,6 +293,127 @@ class AdminController extends \Tiny\BaseController {
         // Validation de la transaction
         $this->pdo->commit();
         return $message;
+    }
+
+    /**
+     * @pattern /{_ADMIN_DIR_}/medias
+     * @return string
+     */
+
+    public function adminMediasAction() {
+
+        // Récupération des fonctionnalités sans tutoriel
+        $results = $this->pdo->query('SELECT * FROM Tutoriel')->fetchAll();
+
+        $tutoriels = array();
+        foreach ($results as $result) {
+            $tutoriels[] = $result;
+        }
+
+        $dropdown = '';
+
+        foreach ($tutoriels as $tutoriel) {
+
+            // Récupération des etapes qui ne sont pas débuts ou fins
+            $results = $this->pdo->query("SELECT * FROM Etape WHERE  NumTutoriel = " . $tutoriel['NumTutoriel'] . " AND Etape.NumEtape IN (SELECT NumSource FROM Lien WHERE Lien.TypeSource LIKE 'Etape') AND Etape.NumEtape IN (SELECT NumCible FROM Lien WHERE Lien.TypeCible LIKE 'Etape')")->fetchAll();
+
+            $etapes = array();
+            foreach ($results as $result) {
+                $etapes[] = $result;
+            }
+            // Création libellé module
+            $dropdown .= '<optgroup label="' . $tutoriel['Nom'] . '">';
+
+            // Création du dropdown contenant les fonctionnalités
+            foreach ($etapes as $etape) {
+                $dropdown .= '<option id="' . $etape['NumEtape'] . '">' . $etape['Description'] . '</option>';
+            }
+            $dropdown .= '</optgroup>';
+        }
+
+        $this->smarty->assign('html', $dropdown);
+        // Passage des variables pour l'appel Ajax
+        $this->smarty->assign('WEB_ROOT', WEB_ROOT);
+        $this->smarty->assign('ADMIN_DIR', _ADMIN_DIR_);
+        $this->smarty->assign('page', 'Gestion des Modules');
+        return $this->smarty->fetch('medias.tpl');
+    }
+
+    /**
+     * @pattern /{_ADMIN_DIR_}/updateMediaEtape
+     * @return string
+     */
+
+    public function updateMediaEtapeAction() {
+
+        $this->pdo->beginTransaction();
+
+        $numEtape = $_POST['numEtape'];
+        $typeMedia = $_POST['typeMedia'];
+        $dateAdd = date('Y-m-d H:i:s');
+        $dateEdit = date('Y-m-d H:i:s');
+
+        $this->pdo->exec("DELETE FROM Media WHERE NumMedia = (SELECT NumMedia FROM AssoMediaEtape WHERE NumEtape = " . $numEtape . ')');
+        $this->pdo->exec("DELETE FROM AssoMediaEtape WHERE NumEtape = " . $numEtape);
+
+        if ($typeMedia == 3 || $typeMedia == 4) {
+            // Recuperation nom du fichier
+            $basename = basename($_FILES['valMedia']['name']);
+            // Dossier d'upload
+            $uploaddir = $this->config['root'] . '\\assets\\media\\';
+            // Recuperation extention fichier upload
+            $ext = pathinfo($basename, PATHINFO_EXTENSION);
+            // Nom complet avec dossier
+            $uploadfile = $uploaddir . $numEtape . '.' . $ext;
+
+            if (file_exists($uploadfile)) {
+                unlink($uploadfile);
+            }
+
+            if ($typeMedia == 4 && $ext == "mp3") {
+                if (!move_uploaded_file($_FILES['valMedia']['tmp_name'], $uploadfile)) {
+                    exit("Erreur lors de l'upload du fichier.");
+                }
+            } else if ($typeMedia == 3 && $ext == "png" || $typeMedia == 3 && $ext == "jpg") {
+                if (!move_uploaded_file($_FILES['valMedia']['tmp_name'], $uploadfile)) {
+                    $this->pdo->rollback();
+                    exit("Erreur lors de l'upload du fichier.");
+                }
+            } else {
+                $this->pdo->rollback();
+                exit("Extention du fichier non valide.");
+            }
+
+            $file = '\\assets\\media\\' . $numEtape . '.' . $ext;
+            $stmt = $this->pdo->prepare("INSERT INTO MEDIA (Nom, LienInterne, TypeMedia, DateAdd, DateEdit) VALUES (:nom, :lien, :typeMedia, :add, :edit)");
+            $stmt->bindParam(':lien', $file); 
+        } else {
+            $media = $_POST['valMedia'];
+            if($typeMedia == 5) {
+                $stmt = $this->pdo->prepare("INSERT INTO MEDIA (Nom, Description, TypeMedia, DateAdd, DateEdit) VALUES (:nom, :description, :typeMedia, :add, :edit)");
+                $stmt->bindParam(':description', $media);   
+            } else {
+                if ($typeMedia == 1) {
+                    $media= str_replace('https://www.youtube.com/watch?v=', 'https://www.youtube.com/embed/', $media);
+                }
+                $stmt = $this->pdo->prepare("INSERT INTO MEDIA (Nom, LienExterne, TypeMedia, DateAdd, DateEdit) VALUES (:nom, :lien, :typeMedia, :add, :edit)");
+                $stmt->bindParam(':lien', $media);   
+            }
+        }
+        $stmt->bindParam(':nom', $nom);
+        $stmt->bindParam(':typeMedia', $typeMedia);
+        $stmt->bindParam(':add', $dateAdd);
+        $stmt->bindParam(':edit', $dateEdit);
+        $stmt->execute();
+        $numMedia = $this->pdo->lastInsertId();
+
+        $stmt = $this->pdo->prepare("INSERT INTO AssoMediaEtape (NumMedia, NumEtape) VALUES (:numMedia, :numEtape)");
+        $stmt->bindParam(':numMedia', $numMedia);
+        $stmt->bindParam(':numEtape', $numEtape);
+        $stmt->execute();
+        
+        $this->pdo->rollback();
+        return "Le média a bien été enregistré.";
     }
 
 }

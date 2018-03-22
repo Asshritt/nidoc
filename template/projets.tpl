@@ -20,8 +20,6 @@
 			</div>
 		</div>
 	</div>
-	<input type="text" hidden id="WEB_ROOT" value="{$WEB_ROOT}">
-	<input type="text" hidden id="ADMIN_DIR" value="{$ADMIN_DIR}">
 	<div id="myModal" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -57,6 +55,11 @@
 
 	$( "#btnValider" ).click(function() {
 
+		{/literal}
+		var WEB_ROOT = '{$WEB_ROOT}';
+		var ADMIN_DIR = '{$ADMIN_DIR}'
+		{literal}
+
 		var idProjet = $(".modal-body #projetId").val()
 		var libelleProjet = $("#nouveauLibelle").val()
 
@@ -70,7 +73,7 @@
 				data:  datas,
 				contentType: false,
 				processData: false, 
-				url: $("#WEB_ROOT").val() + $("#ADMIN_DIR").val() + "/updateLibelleProjet"
+				url: WEB_ROOT + ADMIN_DIR + "/updateLibelleProjet"
 			})
 
 			.done(function(data){
